@@ -53,6 +53,7 @@ public class FakeCallLogFragment extends Fragment {
     private static int am_pm;
     private EditText mPhoneNumber;
     private String cNumber;
+    private EditText mCallDuration;
 
     public FakeCallLogFragment() {
     }
@@ -61,6 +62,7 @@ public class FakeCallLogFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_fake_call_log, container, false);
         mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
+        mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
         mDateOfCall = (EditText) rootView.findViewById(R.id.date_of_call);
         mDateOfCall.setInputType(InputType.TYPE_NULL);
         mDateOfCall.setOnClickListener(new View.OnClickListener() {
@@ -224,10 +226,18 @@ public class FakeCallLogFragment extends Fragment {
         } else {
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, month, day, hourOfDay, minute);
+
+            int duration;
+            try {
+                duration = Integer.parseInt(mCallDuration.getText().toString());
+            } catch (NumberFormatException e) {
+                duration = 0;
+            }
+
             ContentValues values = new ContentValues();
             values.put(CallLog.Calls.NUMBER, phoneNumber);
             values.put(CallLog.Calls.DATE, calendar.getTimeInMillis());
-            values.put(CallLog.Calls.DURATION, 0);
+            values.put(CallLog.Calls.DURATION, duration);
             values.put(CallLog.Calls.TYPE, CallLog.Calls.OUTGOING_TYPE);
             values.put(CallLog.Calls.NEW, 1);
             values.put(CallLog.Calls.CACHED_NAME, "");
