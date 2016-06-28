@@ -19,13 +19,17 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -54,6 +58,8 @@ public class FakeCallLogFragment extends Fragment {
     private EditText mPhoneNumber;
     private String cNumber;
     private EditText mCallDuration;
+    private EditText mCallType;
+    private int callType;
 
     public FakeCallLogFragment() {
     }
@@ -63,6 +69,42 @@ public class FakeCallLogFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_fake_call_log, container, false);
         mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
         mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
+        final String randomDurationText = getResources().getString(R.string.random_duration);
+        mCallDuration.setText(randomDurationText);
+
+        mCallDuration.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (mCallDuration.getText().toString().equals(randomDurationText))
+                {
+                    mCallDuration.setText("");
+                }
+                return false;
+            }
+        });
+
+        mCallDuration.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus)
+                {
+                    if (mCallDuration.getText().toString().trim().equals(""))
+                    {
+                        mCallDuration.setText(randomDurationText);
+                    }
+                }
+                else
+                {
+                    if (mCallDuration.getText().toString().equals(randomDurationText))
+                    {
+                        mCallDuration.setText("");
+                    }
+                    v.performClick();
+                }
+
+            }
+        });
+
         mDateOfCall = (EditText) rootView.findViewById(R.id.date_of_call);
         mDateOfCall.setInputType(InputType.TYPE_NULL);
         mDateOfCall.setOnClickListener(new View.OnClickListener() {
@@ -82,15 +124,39 @@ public class FakeCallLogFragment extends Fragment {
                 newFragment.show(getActivity().getSupportFragmentManager(), "timePicker");
             }
         });
-        Calendar calendar = Calendar.getInstance();
-        updateDateOfCall(calendar);
-        updateTimeOfCall(calendar);
+
+        initTimeOfCallWithCurrentTime();
 
         ImageButton contactButton = (ImageButton) rootView.findViewById(R.id.contact_icon);
         contactButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 selectContact();
+            }
+        });
+
+        mCallType = (EditText) rootView.findViewById(R.id.call_type);
+        mCallType.setInputType(InputType.TYPE_NULL);
+        final String[] menuArray = getResources().getStringArray(R.array.call_types);
+        mCallType.setText(menuArray[callType]);
+        mCallType.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Call Type:");
+                builder.setCancelable(true);
+                AlertDialog dialog = builder.create();
+                dialog.getListView();
+                builder.setSingleChoiceItems(menuArray, callType, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.d("SurveyList", "User selected " + which);
+                        callType = which;
+                        mCallType.setText(menuArray[which]);
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
             }
         });
 
@@ -102,6 +168,12 @@ public class FakeCallLogFragment extends Fragment {
             }
         });
         return rootView;
+    }
+
+    private void initTimeOfCallWithCurrentTime() {
+        Calendar calendar = Calendar.getInstance();
+        updateDateOfCall(calendar);
+        updateTimeOfCall(calendar);
     }
 
     static final int PICK_CONTACT = 1;
@@ -175,9 +247,14 @@ public class FakeCallLogFragment extends Fragment {
         year = month = day = hourOfDay = minute = 0;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        initTimeOfCallWithCurrentTime();
+    }
+
     private static void updateDateOfCall(Calendar calendar) {
         year = calendar.get(Calendar.YEAR);
-        ;
         month = calendar.get(Calendar.MONTH);
         day = calendar.get(Calendar.AM_PM);
 
@@ -187,7 +264,6 @@ public class FakeCallLogFragment extends Fragment {
 
     private static void updateTimeOfCall(Calendar calendar) {
         hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
-        ;
         minute = calendar.get(Calendar.MINUTE);
         am_pm = calendar.get(Calendar.AM_PM);
 
@@ -207,7 +283,7 @@ public class FakeCallLogFragment extends Fragment {
 
         // Check for a valid name, if the user entered one.
         if (TextUtils.isEmpty(phoneNumber.trim())) {
-            mPhoneNumber.setError("The name is empty");
+            mPhoneNumber.setError("The phone number is empty");
             focusView = mPhoneNumber;
             cancel = true;
         }
@@ -226,6 +302,7 @@ public class FakeCallLogFragment extends Fragment {
         } else {
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, month, day, hourOfDay, minute);
+            Log.d(TAG, "Calendar for schedule = " + calendar);
 
             int duration;
             try {
@@ -234,11 +311,27 @@ public class FakeCallLogFragment extends Fragment {
                 duration = 0;
             }
 
+            int callTypeToSet;
+            switch (callType)
+            {
+                case 0:
+                    callTypeToSet = CallLog.Calls.INCOMING_TYPE;
+                    break;
+                case 1:
+                    callTypeToSet = CallLog.Calls.OUTGOING_TYPE;
+                    break;
+                case 2:
+                    callTypeToSet = CallLog.Calls.MISSED_TYPE;
+                    break;
+                default:
+                    callTypeToSet = CallLog.Calls.INCOMING_TYPE;
+            }
+
             ContentValues values = new ContentValues();
             values.put(CallLog.Calls.NUMBER, phoneNumber);
             values.put(CallLog.Calls.DATE, calendar.getTimeInMillis());
             values.put(CallLog.Calls.DURATION, duration);
-            values.put(CallLog.Calls.TYPE, CallLog.Calls.OUTGOING_TYPE);
+            values.put(CallLog.Calls.TYPE, callTypeToSet);
             values.put(CallLog.Calls.NEW, 1);
             values.put(CallLog.Calls.CACHED_NAME, "");
             values.put(CallLog.Calls.CACHED_NUMBER_TYPE, 0);
