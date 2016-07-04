@@ -108,7 +108,7 @@
                     android:layout_height="wrap_content"
                     android:focusableInTouchMode="true"
                     android:hint="@string/call_duration"
-                    android:inputType="time"
+                    android:inputType="number"
                     android:maxLines="1"
                     android:singleLine="true" />
 

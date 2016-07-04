@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 
 /**
@@ -46,6 +47,10 @@ import java.util.Locale;
 public class FakeCallLogFragment extends Fragment {
 
     private static final String TAG = "FakeCallLogFragment";
+
+    private static final int RANDOM_DURATION_MIN_SECONDS = 10;
+    private static final int RANDOM_DURATION_MAX_SECONDS = 300;
+
     private static EditText mTimeOfCall;
     private static EditText mDateOfCall;
 
@@ -60,6 +65,7 @@ public class FakeCallLogFragment extends Fragment {
     private EditText mCallDuration;
     private EditText mCallType;
     private int callType;
+    private String randomDurationText;
 
     public FakeCallLogFragment() {
     }
@@ -69,7 +75,7 @@ public class FakeCallLogFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_fake_call_log, container, false);
         mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
         mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
-        final String randomDurationText = getResources().getString(R.string.random_duration);
+        randomDurationText = getResources().getString(R.string.random_duration);
         mCallDuration.setText(randomDurationText);
 
         mCallDuration.setOnTouchListener(new View.OnTouchListener() {
@@ -288,24 +294,34 @@ public class FakeCallLogFragment extends Fragment {
             cancel = true;
         }
 
+        int duration = 0;
+        if (!cancel) {
+            if (mCallDuration.getText().toString().equals(randomDurationText)) {
+                Random r = new Random();
+                duration = r.nextInt(RANDOM_DURATION_MAX_SECONDS - RANDOM_DURATION_MIN_SECONDS) + RANDOM_DURATION_MIN_SECONDS;
+            } else {
+                try {
+                    Log.d(TAG, "mCallDuration.getText() = " + mCallDuration.getText());
+                    duration = Integer.parseInt(mCallDuration.getText().toString().trim());
+                } catch (NumberFormatException e) {
+                    mPhoneNumber.setError("The duration should be a number");
+                    focusView = mCallDuration;
+                    cancel = true;
+                }
+            }
+        }
+
         if (cancel) {
             // There was an error; don't attempt submit and focus the first
             // form field with an error.
             focusView.requestFocus();
+            return;
         } else {
             Calendar calendar = Calendar.getInstance();
             Log.d(TAG, "Schedule : Cached values - year = " + year + ", month = " + month
                     + ", day = " + day + ", hourOfDay = " + hourOfDay + ", minute = " + minute);
             calendar.set(year, month, day, hourOfDay, minute);
             Log.d(TAG, "Calendar for schedule = " + calendar);
-
-            int duration;
-            try {
-                Log.d(TAG, "mCallDuration.getText() = " + mCallDuration.getText());
-                duration = Integer.parseInt(mCallDuration.getText().toString());
-            } catch (NumberFormatException e) {
-                duration = 0;
-            }
 
             int callTypeToSet;
             switch (callType)
