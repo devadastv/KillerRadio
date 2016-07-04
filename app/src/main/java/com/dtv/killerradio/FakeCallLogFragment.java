@@ -256,7 +256,7 @@ public class FakeCallLogFragment extends Fragment {
     private static void updateDateOfCall(Calendar calendar) {
         year = calendar.get(Calendar.YEAR);
         month = calendar.get(Calendar.MONTH);
-        day = calendar.get(Calendar.AM_PM);
+        day = calendar.get(Calendar.DAY_OF_MONTH);
 
         SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
         mDateOfCall.setText(dateFormatter.format(calendar.getTime()));
@@ -288,24 +288,20 @@ public class FakeCallLogFragment extends Fragment {
             cancel = true;
         }
 
-        // Check for a valid mobile number.
-//        if (!cancel && TextUtils.isEmpty(mobileNumber) && !isPhoneNumberValid(mobileNumber)) {
-//            mMobileNumber.setError("Mobile number should contain at least 10 digits");
-//            focusView = mMobileNumber;
-//            cancel = true;
-//        }
-
         if (cancel) {
             // There was an error; don't attempt submit and focus the first
             // form field with an error.
             focusView.requestFocus();
         } else {
             Calendar calendar = Calendar.getInstance();
+            Log.d(TAG, "Schedule : Cached values - year = " + year + ", month = " + month
+                    + ", day = " + day + ", hourOfDay = " + hourOfDay + ", minute = " + minute);
             calendar.set(year, month, day, hourOfDay, minute);
             Log.d(TAG, "Calendar for schedule = " + calendar);
 
             int duration;
             try {
+                Log.d(TAG, "mCallDuration.getText() = " + mCallDuration.getText());
                 duration = Integer.parseInt(mCallDuration.getText().toString());
             } catch (NumberFormatException e) {
                 duration = 0;
