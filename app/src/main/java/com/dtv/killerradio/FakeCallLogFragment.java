@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -54,11 +55,24 @@ public class FakeCallLogFragment extends Fragment {
     private static EditText mTimeOfCall;
     private static EditText mDateOfCall;
 
+    // Call log entry date and time
     private static int year;
     private static int month;
     private static int day;
     private static int hourOfDay; // Hour of day always - 24 hours
     private static int minute;
+
+
+    private static EditText mTimeOfInsertion;
+    private static EditText mDateOfInsertion;
+
+    // Call log entry insertion - Date and time
+    private static int callLogInsertionYear;
+    private static int callLogInsertionMonth;
+    private static int callLogInsertionDay;
+    private static int callLogInsertionHourOfDay; // Hour of day always - 24 hours
+    private static int callLogInsertionMinute;
+
     private static int am_pm;
     private EditText mPhoneNumber;
     private String cNumber;
@@ -66,6 +80,7 @@ public class FakeCallLogFragment extends Fragment {
     private EditText mCallType;
     private int callType;
     private String randomDurationText;
+    private static CheckBox mInsertTimeCheckBox;
 
     public FakeCallLogFragment() {
     }
@@ -81,8 +96,7 @@ public class FakeCallLogFragment extends Fragment {
         mCallDuration.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (mCallDuration.getText().toString().equals(randomDurationText))
-                {
+                if (mCallDuration.getText().toString().equals(randomDurationText)) {
                     mCallDuration.setText("");
                 }
                 return false;
@@ -92,17 +106,12 @@ public class FakeCallLogFragment extends Fragment {
         mCallDuration.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 
             public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus)
-                {
-                    if (mCallDuration.getText().toString().trim().equals(""))
-                    {
+                if (!hasFocus) {
+                    if (mCallDuration.getText().toString().trim().equals("")) {
                         mCallDuration.setText(randomDurationText);
                     }
-                }
-                else
-                {
-                    if (mCallDuration.getText().toString().equals(randomDurationText))
-                    {
+                } else {
+                    if (mCallDuration.getText().toString().equals(randomDurationText)) {
                         mCallDuration.setText("");
                     }
                     v.performClick();
@@ -166,6 +175,40 @@ public class FakeCallLogFragment extends Fragment {
             }
         });
 
+        mInsertTimeCheckBox = (CheckBox) rootView.findViewById(R.id.insert_time_checkbox);
+        float scaledDensity = getResources().getDisplayMetrics().scaledDensity;
+        mInsertTimeCheckBox.setTextSize(mTimeOfCall.getTextSize() / scaledDensity);
+        mInsertTimeCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mInsertTimeCheckBox.isChecked()) {
+                    initInsertTimeWithCurrentTime();
+                }
+            }
+        });
+
+        mDateOfInsertion = (EditText) rootView.findViewById(R.id.date_of_insertion);
+        mDateOfInsertion.setInputType(InputType.TYPE_NULL);
+        mDateOfInsertion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment newFragment = new DatePickerFragmentInsertDate();
+                newFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
+            }
+        });
+
+        mTimeOfInsertion = (EditText) rootView.findViewById(R.id.time_of_insertion);
+        mTimeOfInsertion.setInputType(InputType.TYPE_NULL);
+        mTimeOfInsertion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment newFragment = new TimePickerFragmentInsertTime();
+                newFragment.show(getActivity().getSupportFragmentManager(), "timePicker");
+            }
+        });
+
+        initInsertTimeWithCurrentTime();
+
         Button submitButton = (Button) rootView.findViewById(R.id.submit_button);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -180,6 +223,12 @@ public class FakeCallLogFragment extends Fragment {
         Calendar calendar = Calendar.getInstance();
         updateDateOfCall(calendar);
         updateTimeOfCall(calendar);
+    }
+
+    private void initInsertTimeWithCurrentTime() {
+        Calendar calendar = Calendar.getInstance();
+        updateDateOfInsertion(calendar, false);
+        updateTimeOfInsertion(calendar, false);
     }
 
     static final int PICK_CONTACT = 1;
@@ -277,6 +326,34 @@ public class FakeCallLogFragment extends Fragment {
         mTimeOfCall.setText(dateFormatter.format(calendar.getTime()));
     }
 
+    private static void updateDateOfInsertion(Calendar calendar, boolean resetCheckBox) {
+        if ((callLogInsertionYear != 0 && callLogInsertionYear != calendar.get(Calendar.YEAR) ||
+                callLogInsertionMonth != 0 && callLogInsertionMonth != calendar.get(Calendar.MONTH) ||
+                callLogInsertionDay != 0 && callLogInsertionDay != calendar.get(Calendar.DAY_OF_MONTH))
+                && resetCheckBox) {
+            mInsertTimeCheckBox.setChecked(false);
+        }
+        callLogInsertionYear = calendar.get(Calendar.YEAR);
+        callLogInsertionMonth = calendar.get(Calendar.MONTH);
+        callLogInsertionDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+        mDateOfInsertion.setText(dateFormatter.format(calendar.getTime()));
+    }
+
+    private static void updateTimeOfInsertion(Calendar calendar, boolean resetCheckBox) {
+        if ((callLogInsertionHourOfDay != 0 && callLogInsertionHourOfDay != calendar.get(Calendar.HOUR_OF_DAY) ||
+                callLogInsertionMinute != 0 && callLogInsertionMinute != calendar.get(Calendar.MINUTE))
+                && resetCheckBox) {
+            mInsertTimeCheckBox.setChecked(false);
+        }
+        callLogInsertionHourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+        callLogInsertionMinute = calendar.get(Calendar.MINUTE);
+
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
+        mTimeOfInsertion.setText(dateFormatter.format(calendar.getTime()));
+    }
+
     private void attemptDataSubmit() {
         // Reset errors.
         mPhoneNumber.setError(null);
@@ -324,8 +401,7 @@ public class FakeCallLogFragment extends Fragment {
             Log.d(TAG, "Calendar for schedule = " + calendar);
 
             int callTypeToSet;
-            switch (callType)
-            {
+            switch (callType) {
                 case 0:
                     callTypeToSet = CallLog.Calls.INCOMING_TYPE;
                     break;
@@ -339,18 +415,29 @@ public class FakeCallLogFragment extends Fragment {
                     callTypeToSet = CallLog.Calls.INCOMING_TYPE;
             }
 
-            ContentValues values = new ContentValues();
-            values.put(CallLog.Calls.NUMBER, phoneNumber);
-            values.put(CallLog.Calls.DATE, calendar.getTimeInMillis());
-            values.put(CallLog.Calls.DURATION, duration);
-            values.put(CallLog.Calls.TYPE, callTypeToSet);
-            values.put(CallLog.Calls.NEW, 1);
-            values.put(CallLog.Calls.CACHED_NAME, "");
-            values.put(CallLog.Calls.CACHED_NUMBER_TYPE, 0);
-            values.put(CallLog.Calls.CACHED_NUMBER_LABEL, "");
-            Log.d(TAG, "Inserting call log placeholder for " + phoneNumber);
-            getActivity().getContentResolver().insert(CallLog.Calls.CONTENT_URI, values);
-            Toast.makeText(getActivity(), "The fake call log is successfully added!", Toast.LENGTH_SHORT).show();
+            // Insert Time
+            Calendar insertTime = Calendar.getInstance();
+            Log.d(TAG, "Insert time - year = " + callLogInsertionYear + ", month = " + callLogInsertionMonth
+                    + ", day = " + callLogInsertionDay + ", hourOfDay = " + callLogInsertionHourOfDay
+                    + ", minute = " + callLogInsertionMinute);
+            insertTime.set(callLogInsertionYear, callLogInsertionMonth, callLogInsertionDay, callLogInsertionHourOfDay, callLogInsertionMinute);
+            Log.d(TAG, "Insertion time = " + insertTime);
+            if (mInsertTimeCheckBox.isChecked() || insertTime.getTimeInMillis() <= Calendar.getInstance().getTimeInMillis()) {
+                ContentValues values = new ContentValues();
+                values.put(CallLog.Calls.NUMBER, phoneNumber);
+                values.put(CallLog.Calls.DATE, calendar.getTimeInMillis());
+                values.put(CallLog.Calls.DURATION, duration);
+                values.put(CallLog.Calls.TYPE, callTypeToSet);
+                values.put(CallLog.Calls.NEW, 1);
+                values.put(CallLog.Calls.CACHED_NAME, "");
+                values.put(CallLog.Calls.CACHED_NUMBER_TYPE, 0);
+                values.put(CallLog.Calls.CACHED_NUMBER_LABEL, "");
+                Log.d(TAG, "Inserting call log placeholder for " + phoneNumber);
+                getActivity().getContentResolver().insert(CallLog.Calls.CONTENT_URI, values);
+                Toast.makeText(getActivity(), "The fake call log is successfully added!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity(), "The fake call log is added to the schedule", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -402,6 +489,57 @@ public class FakeCallLogFragment extends Fragment {
             Calendar newDate = Calendar.getInstance();
             newDate.set(year, month, day, hourOfDay, minute);
             FakeCallLogFragment.updateTimeOfCall(newDate);
+        }
+    }
+
+    public static class DatePickerFragmentInsertDate extends DialogFragment
+            implements DatePickerDialog.OnDateSetListener {
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current date as the default date in the picker if there is no date already set in DatePicker
+            final Calendar c = Calendar.getInstance();
+            if (callLogInsertionYear > 0 && callLogInsertionMonth > 0 && callLogInsertionDay > 0) {
+                c.set(callLogInsertionYear, callLogInsertionMonth, callLogInsertionDay);
+            }
+
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH);
+            int day = c.get(Calendar.DAY_OF_MONTH);
+
+            // Create a new instance of DatePickerDialog and return it
+            return new DatePickerDialog(getActivity(), this, year, month, day);
+        }
+
+        public void onDateSet(DatePicker view, int year, int month, int day) {
+            Calendar newDate = Calendar.getInstance();
+            newDate.set(year, month, day);
+            FakeCallLogFragment.updateDateOfInsertion(newDate, true);
+        }
+    }
+
+    public static class TimePickerFragmentInsertTime extends DialogFragment
+            implements TimePickerDialog.OnTimeSetListener {
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current time as the default values for the picker
+            final Calendar c = Calendar.getInstance();
+            if (callLogInsertionHourOfDay > 0 && callLogInsertionMinute > 0) {
+                c.set(callLogInsertionYear, callLogInsertionMonth, callLogInsertionDay, callLogInsertionHourOfDay, callLogInsertionMinute);
+            }
+            int hour = c.get(Calendar.HOUR_OF_DAY);
+            int minute = c.get(Calendar.MINUTE);
+
+            // Create a new instance of TimePickerDialog and return it
+            return new TimePickerDialog(getActivity(), this, hour, minute,
+                    DateFormat.is24HourFormat(getActivity()));
+        }
+
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            Calendar newDate = Calendar.getInstance();
+            newDate.set(callLogInsertionYear, callLogInsertionMonth, callLogInsertionDay, hourOfDay, minute);
+            FakeCallLogFragment.updateTimeOfInsertion(newDate, true);
         }
     }
 }
