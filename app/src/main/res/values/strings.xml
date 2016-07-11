@@ -21,4 +21,7 @@
         <item>Outgoing</item>
         <item>Missed Call</item>
     </string-array>
+
+    <!-- Call Log Schedules Fragment -->
+    <string name="empty_call_log_schedules_list">There are no call logs scheduled</string>
 </resources>

@@ -70,17 +70,11 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+
     }
 
 
@@ -113,12 +107,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return new FakeCallLogFragment();
+            switch (position)
+            {
+                case 0:
+                    return new FakeCallLogFragment();
+                case 1:
+                    return new CallLogSchedulesFragment();
+                default:
+                    return null;
+            }
         }
 
         @Override
         public int getCount() {
-            return 1;
+            return 2;
         }
 
         @Override
@@ -126,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
             switch (position) {
                 case 0:
                     return "FAKE CALL LOG";
+                case 1:
+                    return "CALL LOG SCHEDULES";
 //                case 1:
 //                    return "FAKE SMS LOG";
 //                case 2:
@@ -139,5 +143,13 @@ public class MainActivity extends AppCompatActivity {
 
     public SQLiteHelper getSqLiteHelper(){
         return sqLiteHelper;
+    }
+
+    /**
+     * Launches the FakeCallLogFragment. Used to add new call log from Schedules list screen.
+     * Check if there is any better option to launch a target fragment from another fragment.
+     */
+    public void launchFakeCallLogFragment() {
+        mViewPager.setCurrentItem(0);
     }
 }
