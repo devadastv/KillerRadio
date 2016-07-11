@@ -27,11 +27,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -51,7 +55,8 @@ import java.util.Random;
  */
 public class CallLogSchedulesFragment extends Fragment {
 
-    private static final String TAG = "CallLogSchedulesFragment";
+    private static final String TAG = "CallLogSchedules";
+    private SimpleCursorAdapter mAdapter;
 
     public CallLogSchedulesFragment() {
     }
@@ -67,6 +72,52 @@ public class CallLogSchedulesFragment extends Fragment {
                 ((MainActivity) getActivity()).launchFakeCallLogFragment();
             }
         });
+
+        ListView mCallLogSchedulesList = (ListView) rootView.findViewById(R.id.call_log_schedule_list);
+        mCallLogSchedulesList.setEmptyView(rootView.findViewById(android.R.id.empty));
+
+        // For the cursor adapter, specify which columns go into which views
+        String[] fromColumns = {SQLiteHelper.CALL_LOG_COLUMN_NUMBER, SQLiteHelper.CALL_LOG_COLUMN_CALL_DATE};
+        int[] toViews = {android.R.id.text1, android.R.id.text2};
+
+        Cursor cursor = ((MainActivity) getActivity()).getSqLiteHelper().getFilteredList(null, null, null);
+        Log.d(TAG, "No of call log schedule entries = " + cursor.getCount());
+        mAdapter = new SimpleCursorAdapter(getActivity(),
+                android.R.layout.simple_list_item_2, cursor,
+                fromColumns, toViews, 0);
+
+        mCallLogSchedulesList.setAdapter(mAdapter);
+        mCallLogSchedulesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Intent contentDetailsIntent = new Intent(CustomerListActivity.this, CustomerDetailsActivity.class);
+//                Bundle extras = new Bundle();
+//                extras.putInt(SURVEY_ITEM_INDEX, position);
+//                contentDetailsIntent.putExtras(extras);
+//                startActivity(contentDetailsIntent);
+            }
+        });
         return rootView;
+    }
+
+    /**
+     * This method updates the listview when this fragments becomes visible. We can not use onResume here since ViewPager is used
+     * in the activity. See for details:  http://stackoverflow.com/questions/10024739/how-to-determine-when-fragment-becomes-visible-in-viewpager
+     *
+     * @param visible
+     */
+
+    @Override
+    public void setMenuVisibility(final boolean visible) {
+        Log.d(TAG, "Inside setMenuVisibility of CallLogSchedulesListFragment...");
+        super.setMenuVisibility(visible);
+        if (visible) {
+            updateCurrentFilterCursor();
+        }
+    }
+
+    public void updateCurrentFilterCursor() {
+        Cursor cursor = ((MainActivity) getActivity()).getSqLiteHelper().getFilteredList(null, null, null);
+        mAdapter.changeCursor(cursor);
     }
 }

@@ -439,7 +439,8 @@ public class FakeCallLogFragment extends Fragment {
                 Toast.makeText(getActivity(), "The fake call log is successfully added!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getActivity(), "The fake call log is added to the schedule", Toast.LENGTH_SHORT).show();
-                ((MainActivity)getActivity()).getSqLiteHelper().createCallLogSchedule(phoneNumber, calendarForCallLog.getTimeInMillis(), duration, callTypeToSet, 1, "", 0, "");
+                ((MainActivity) getActivity()).getSqLiteHelper().createCallLogSchedule(phoneNumber, calendarForCallLog.getTimeInMillis(), duration, callTypeToSet, 1, "", 0, "");
+                ((MainActivity) getActivity()).launchCallLogSchedulesFragment();
             }
         }
     }

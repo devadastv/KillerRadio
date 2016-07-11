@@ -107,8 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            switch (position)
-            {
+            switch (position) {
                 case 0:
                     return new FakeCallLogFragment();
                 case 1:
@@ -141,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public SQLiteHelper getSqLiteHelper(){
+    public SQLiteHelper getSqLiteHelper() {
         return sqLiteHelper;
     }
 
@@ -151,5 +150,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public void launchFakeCallLogFragment() {
         mViewPager.setCurrentItem(0);
+    }
+
+    public void launchCallLogSchedulesFragment() {
+        mViewPager.setCurrentItem(1);
     }
 }
