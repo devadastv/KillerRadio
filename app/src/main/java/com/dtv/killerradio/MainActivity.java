@@ -31,12 +31,15 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.dtv.killerradio.db.SQLiteHelper;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+    SQLiteHelper sqLiteHelper = new SQLiteHelper(this);
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -132,5 +135,9 @@ public class MainActivity extends AppCompatActivity {
             }
             return null;
         }
+    }
+
+    public SQLiteHelper getSqLiteHelper(){
+        return sqLiteHelper;
     }
 }

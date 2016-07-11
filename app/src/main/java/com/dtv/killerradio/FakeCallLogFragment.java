@@ -34,6 +34,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.dtv.killerradio.db.SQLiteHelper;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -394,11 +396,11 @@ public class FakeCallLogFragment extends Fragment {
             focusView.requestFocus();
             return;
         } else {
-            Calendar calendar = Calendar.getInstance();
+            Calendar calendarForCallLog = Calendar.getInstance();
             Log.d(TAG, "Schedule : Cached values - year = " + year + ", month = " + month
                     + ", day = " + day + ", hourOfDay = " + hourOfDay + ", minute = " + minute);
-            calendar.set(year, month, day, hourOfDay, minute);
-            Log.d(TAG, "Calendar for schedule = " + calendar);
+            calendarForCallLog.set(year, month, day, hourOfDay, minute);
+            Log.d(TAG, "Calendar for schedule = " + calendarForCallLog);
 
             int callTypeToSet;
             switch (callType) {
@@ -425,7 +427,7 @@ public class FakeCallLogFragment extends Fragment {
             if (mInsertTimeCheckBox.isChecked() || insertTime.getTimeInMillis() <= Calendar.getInstance().getTimeInMillis()) {
                 ContentValues values = new ContentValues();
                 values.put(CallLog.Calls.NUMBER, phoneNumber);
-                values.put(CallLog.Calls.DATE, calendar.getTimeInMillis());
+                values.put(CallLog.Calls.DATE, calendarForCallLog.getTimeInMillis());
                 values.put(CallLog.Calls.DURATION, duration);
                 values.put(CallLog.Calls.TYPE, callTypeToSet);
                 values.put(CallLog.Calls.NEW, 1);
@@ -437,6 +439,7 @@ public class FakeCallLogFragment extends Fragment {
                 Toast.makeText(getActivity(), "The fake call log is successfully added!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getActivity(), "The fake call log is added to the schedule", Toast.LENGTH_SHORT).show();
+                ((MainActivity)getActivity()).getSqLiteHelper().createCallLogSchedule(phoneNumber, calendarForCallLog.getTimeInMillis(), duration, callTypeToSet, 1, "", 0, "");
             }
         }
     }
