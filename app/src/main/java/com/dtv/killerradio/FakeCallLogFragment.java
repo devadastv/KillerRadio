@@ -89,6 +89,7 @@ public class FakeCallLogFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "Inside FakeCalllogFragment - onCreateView method");
         View rootView = inflater.inflate(R.layout.fragment_fake_call_log, container, false);
         mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
         mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
@@ -151,11 +152,10 @@ public class FakeCallLogFragment extends Fragment {
                 selectContact();
             }
         });
-
+        final String[] menuArray = getResources().getStringArray(R.array.call_types);
         mCallType = (EditText) rootView.findViewById(R.id.call_type);
         mCallType.setInputType(InputType.TYPE_NULL);
-        final String[] menuArray = getResources().getStringArray(R.array.call_types);
-        mCallType.setText(menuArray[callType]);
+        initCallType();
         mCallType.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -231,6 +231,20 @@ public class FakeCallLogFragment extends Fragment {
         Calendar calendar = Calendar.getInstance();
         updateDateOfInsertion(calendar, false);
         updateTimeOfInsertion(calendar, false);
+    }
+
+    private void initCallType(){
+        mCallType.setText(getResources().getStringArray(R.array.call_types)[callType]);
+    }
+
+    private void resetFieldsToInitialValues(){
+        mPhoneNumber.setText("");
+        initTimeOfCallWithCurrentTime();
+        mCallDuration.setText(randomDurationText);
+        callType = 0;
+        initCallType();
+        mInsertTimeCheckBox.setChecked(true);
+        initInsertTimeWithCurrentTime();
     }
 
     static final int PICK_CONTACT = 1;
@@ -442,6 +456,8 @@ public class FakeCallLogFragment extends Fragment {
                 ((MainActivity) getActivity()).getSqLiteHelper().createCallLogSchedule(phoneNumber, calendarForCallLog.getTimeInMillis(), duration, callTypeToSet, 1, "", 0, "");
                 ((MainActivity) getActivity()).launchCallLogSchedulesFragment();
             }
+            resetFieldsToInitialValues();
+            //TODO: reset the fields to default values
         }
     }
 
