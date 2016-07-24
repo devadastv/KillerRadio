@@ -24,4 +24,7 @@
 
     <!-- Call Log Schedules Fragment -->
     <string name="empty_call_log_schedules_list">There are no call logs scheduled</string>
+
+    <!-- Edit Call Log Fragment -->
+    <string name="empty_call_log_list_message">The call log is empty!</string>
 </resources>

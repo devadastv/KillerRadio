@@ -112,6 +112,8 @@ public class MainActivity extends AppCompatActivity {
                     return new FakeCallLogFragment();
                 case 1:
                     return new CallLogSchedulesFragment();
+                case 2:
+                    return new EditCallLogFragment();
                 default:
                     return null;
             }
@@ -119,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
@@ -129,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
                     return "FAKE CALL LOG";
                 case 1:
                     return "CALL LOG SCHEDULES";
+                case 2:
+                    return "EDIT CALL LOG";
 //                case 1:
 //                    return "FAKE SMS LOG";
 //                case 2:
