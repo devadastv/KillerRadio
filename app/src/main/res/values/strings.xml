@@ -27,4 +27,5 @@
 
     <!-- Edit Call Log Fragment -->
     <string name="empty_call_log_list_message">The call log is empty!</string>
+    <string name="calllog_edit_empty_placeholder"> </string>
 </resources>
