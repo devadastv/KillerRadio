@@ -373,6 +373,7 @@ public class FakeCallLogFragment extends Fragment {
     private void attemptDataSubmit() {
         // Reset errors.
         mPhoneNumber.setError(null);
+        mCallDuration.setError(null);
 
         // Store values at the time of the login attempt.
         String phoneNumber = mPhoneNumber.getText().toString();
@@ -397,7 +398,7 @@ public class FakeCallLogFragment extends Fragment {
                     Log.d(TAG, "mCallDuration.getText() = " + mCallDuration.getText());
                     duration = Integer.parseInt(mCallDuration.getText().toString().trim());
                 } catch (NumberFormatException e) {
-                    mPhoneNumber.setError("The duration should be a number");
+                    mCallDuration.setError("The duration should be a number");
                     focusView = mCallDuration;
                     cancel = true;
                 }
