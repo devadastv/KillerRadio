@@ -239,10 +239,6 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         mPhoneNumber.setError(null);
         mCallDuration.setError(null);
 
-
-        // Store values at the time of the login attempt.
-        String phoneNumber = mPhoneNumber.getText().toString();
-
         callLogEntry.setPhoneNumber(mPhoneNumber.getText().toString());
         if (callLogEntry.isPhoneNumberValid()) {
             mPhoneNumber.setError("The phone number is empty");
@@ -305,7 +301,7 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            final EditText phoneInput = mPhoneNumber; // (EditText) findViewById(R.id.phoneNumberInput);
+//            final EditText phoneInput = mPhoneNumber; // (EditText) findViewById(R.id.phoneNumberInput);
             Cursor cursor = null;
             String phoneNumber = "";
             List<String> allNumbers = new ArrayList<String>();
@@ -340,7 +336,8 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
                     public void onClick(DialogInterface dialog, int item) {
                         String selectedNumber = items[item].toString();
                         selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-                        phoneInput.setText(selectedNumber);
+                        callLogEntry.setPhoneNumber(selectedNumber);
+                        mPhoneNumber.setText(callLogEntry.getPhoneNumber());
                     }
                 });
                 AlertDialog alert = builder.create();
@@ -349,7 +346,8 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
                 } else {
                     String selectedNumber = phoneNumber.toString();
                     selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-                    phoneInput.setText(selectedNumber);
+                    callLogEntry.setPhoneNumber(selectedNumber);
+                    mPhoneNumber.setText(callLogEntry.getPhoneNumber());
                 }
 
                 if (phoneNumber.length() == 0) {

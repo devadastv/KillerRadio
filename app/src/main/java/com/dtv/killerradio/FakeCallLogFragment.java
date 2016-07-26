@@ -230,7 +230,6 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            final EditText phoneInput = mPhoneNumber; // (EditText) findViewById(R.id.phoneNumberInput);
             Cursor cursor = null;
             String phoneNumber = "";
             List<String> allNumbers = new ArrayList<String>();
@@ -264,7 +263,8 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
                     public void onClick(DialogInterface dialog, int item) {
                         String selectedNumber = items[item].toString();
                         selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-                        phoneInput.setText(selectedNumber);
+                        callLogEntry.setPhoneNumber(selectedNumber);
+                        mPhoneNumber.setText(callLogEntry.getPhoneNumber());
                     }
                 });
                 AlertDialog alert = builder.create();
@@ -273,7 +273,12 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
                 } else {
                     String selectedNumber = phoneNumber;
                     selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-                    phoneInput.setText(selectedNumber);
+
+                    callLogEntry.setPhoneNumber(selectedNumber);
+                    Log.d(TAG, "selectedNumber = " + callLogEntry.getPhoneNumber());
+                    mPhoneNumber.requestFocus();
+                    mPhoneNumber.setText(callLogEntry.getPhoneNumber());
+                    Log.d(TAG, "gettext = " + mPhoneNumber.getText().toString());
                 }
 
                 if (phoneNumber.length() == 0) {
@@ -281,18 +286,6 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
                 }
             }
         }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        initFieldsToDefaultValues();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        initFieldsToDefaultValues();
     }
 
     private static void updateDateOfCall() {
