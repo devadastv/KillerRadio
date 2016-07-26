@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.dtv.killerradio.calllog.CallLogEntry;
 import com.dtv.killerradio.calllog.CallLogUtility;
+import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ import java.util.Locale;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FakeCallLogFragment extends Fragment {
+public class FakeCallLogFragment extends BackKeyHandlingFragment {
 
     private static final String TAG = "FakeCallLogFragment";
 
@@ -65,6 +66,11 @@ public class FakeCallLogFragment extends Fragment {
     private static CallLogEntry callLogEntry;
 
     public FakeCallLogFragment() {
+    }
+
+    public static FakeCallLogFragment newInstance() {
+        FakeCallLogFragment myFragment = new FakeCallLogFragment();
+        return myFragment;
     }
 
     @Override
@@ -373,6 +379,11 @@ public class FakeCallLogFragment extends Fragment {
             }
             initFieldsToDefaultValues();
         }
+    }
+
+    @Override
+    public boolean handleBackKey() {
+        return false;
     }
 
     public static class DatePickerFragment extends DialogFragment

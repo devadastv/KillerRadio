@@ -42,6 +42,7 @@ import android.widget.Toast;
 
 import com.dtv.killerradio.calllog.CallLogEntry;
 import com.dtv.killerradio.calllog.CallLogUtility;
+import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ import java.util.Random;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EditCallLogFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EditCallLogFragment extends BackKeyHandlingFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = "EditCallLogFragment";
 
@@ -70,11 +71,16 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
     private EditText mCallDuration;
     private EditText mCallType;
     private ViewGroup rootView;
-    private String selectedLogId;
 
     private static CallLogEntry callLogEntry;
+    private volatile boolean isEditViewVisible;
 
     public EditCallLogFragment() {
+    }
+
+    public static EditCallLogFragment newInstance() {
+        EditCallLogFragment fragment = new EditCallLogFragment();
+        return fragment;
     }
 
     @Override
@@ -197,6 +203,14 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
                 switchToListScreen(rootView);
             }
         });
+
+        Button mDiscardButton = (Button) rootView.findViewById(R.id.discard_button);
+        mDiscardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchToListScreen(rootView);
+            }
+        });
     }
 
     private void switchToEditScreen(View rootView) {
@@ -204,6 +218,8 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
         listScreen.setVisibility(View.GONE);
         ScrollView editScreen = (ScrollView) rootView.findViewById(R.id.calllog_edit_layout);
         editScreen.setVisibility(View.VISIBLE);
+        isEditViewVisible = true;
+        Log.d(TAG, "On switchToEditScreen : isEditViewVisible = " + isEditViewVisible);
     }
 
     private void switchToListScreen(View rootView) {
@@ -211,6 +227,8 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
         editView.setVisibility(View.GONE);
         LinearLayout listView = (LinearLayout) rootView.findViewById(R.id.callloglist_layout);
         listView.setVisibility(View.VISIBLE);
+        isEditViewVisible = false;
+        Log.d(TAG, "On switchToListScreen : isEditViewVisible = " + isEditViewVisible);
     }
 
     private boolean attemptDataSubmit() {
@@ -266,6 +284,8 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
             if (null != cursor) {
                 Log.e(TAG, "Cursor count = " + cursor.getCount() + " and requested position = " + position);
             }
+            Toast.makeText(getActivity(), getResources().getString(R.string.error_call_log_edit_message), Toast.LENGTH_LONG).show();
+            switchToListScreen(rootView);
         }
     }
 
@@ -371,10 +391,7 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
         Log.d(TAG, "Inside setMenuVisibility of CallLogSchedulesListFragment...");
         super.setMenuVisibility(visible);
         if (visible && (null != rootView)) {
-            ScrollView layout1 = (ScrollView) rootView.findViewById(R.id.calllog_edit_layout);
-            layout1.setVisibility(View.GONE);
-            LinearLayout layout2 = (LinearLayout) rootView.findViewById(R.id.callloglist_layout);
-            layout2.setVisibility(View.VISIBLE);
+            switchToListScreen(rootView);
         }
     }
 
@@ -384,6 +401,18 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
 
     private static void updateTimeOfCall() {
         mTimeOfCall.setText(callLogEntry.getTimeTextForDisplay());
+    }
+
+    @Override
+    public boolean handleBackKey() {
+        Log.d(TAG, "isEditViewVisible " + isEditViewVisible);
+        if (isEditViewVisible) {
+            switchToListScreen(rootView);
+            return true;
+        } else
+        {
+            return false;
+        }
     }
 
     public static class DatePickerFragment extends DialogFragment

@@ -28,4 +28,6 @@
     <!-- Edit Call Log Fragment -->
     <string name="empty_call_log_list_message">The call log is empty!</string>
     <string name="calllog_edit_empty_placeholder"> </string>
+    <string name="discard">Discard</string>
+    <string name="error_call_log_edit_message">Error in fetching the requested log entry !</string>
 </resources>

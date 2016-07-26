@@ -298,6 +298,7 @@ public class CallLogEntry {
         setPhoneNumber(cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER)));
         Calendar callDayTime = Calendar.getInstance();
         callDayTime.setTimeInMillis(Long.valueOf(cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE))));
+        Log.d(TAG, "Cached Name = " + cursor.getString(cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));
         updateDateOfCall(callDayTime);
         updateTimeOfCall(callDayTime);
         setCallDuration(Integer.toString(cursor.getInt(cursor.getColumnIndex(CallLog.Calls.DURATION))));

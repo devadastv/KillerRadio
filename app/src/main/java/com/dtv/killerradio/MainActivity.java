@@ -32,14 +32,17 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.dtv.killerradio.db.SQLiteHelper;
+import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
     SQLiteHelper sqLiteHelper = new SQLiteHelper(this);
+    private static final String TAG = "MainActivity";
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -101,22 +104,37 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+        HashMap<Integer, BackKeyHandlingFragment> mPageReferenceMap = new HashMap<>(getCount());
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
+
         }
 
         @Override
         public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    return new FakeCallLogFragment();
-                case 1:
-                    return new CallLogSchedulesFragment();
-                case 2:
-                    return new EditCallLogFragment();
-                default:
-                    return null;
+            if (!mPageReferenceMap.containsKey(position)) {
+                BackKeyHandlingFragment fragment;
+                switch (position) {
+                    case 0:
+                        fragment = FakeCallLogFragment.newInstance();
+                        break;
+                    case 1:
+                        fragment = CallLogSchedulesFragment.newInstance();
+                        break;
+                    case 2:
+                        fragment = EditCallLogFragment.newInstance();
+                        break;
+                    default:
+                        return null;
+                }
+                mPageReferenceMap.put(position, fragment);
             }
+            return mPageReferenceMap.get(position);
+        }
+
+        public void destroyItem (ViewGroup container, int position, Object object) {
+            super.destroyItem(container, position, object);
+            mPageReferenceMap.remove(position);
         }
 
         @Override
@@ -158,5 +176,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void launchCallLogSchedulesFragment() {
         mViewPager.setCurrentItem(1);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        BackKeyHandlingFragment fragment = (BackKeyHandlingFragment) mSectionsPagerAdapter.getItem(mViewPager.getCurrentItem());
+        Log.d(TAG, "About to handle back key in " + fragment);
+        if (!fragment.handleBackKey()) {
+            Log.d(TAG, "fragment.handleBackKey() = " + fragment.handleBackKey());
+            super.onBackPressed();
+        }
     }
 }

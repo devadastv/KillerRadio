@@ -41,6 +41,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.dtv.killerradio.db.SQLiteHelper;
+import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,12 +54,17 @@ import java.util.Random;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CallLogSchedulesFragment extends Fragment {
+public class CallLogSchedulesFragment extends BackKeyHandlingFragment {
 
     private static final String TAG = "CallLogSchedules";
     private SimpleCursorAdapter mAdapter;
 
     public CallLogSchedulesFragment() {
+    }
+
+    public static CallLogSchedulesFragment newInstance() {
+        CallLogSchedulesFragment fragment = new CallLogSchedulesFragment();
+        return fragment;
     }
 
     @Override
@@ -119,5 +125,10 @@ public class CallLogSchedulesFragment extends Fragment {
     public void updateCurrentFilterCursor() {
         Cursor cursor = ((MainActivity) getActivity()).getSqLiteHelper().getFilteredList(null, null, null);
         mAdapter.changeCursor(cursor);
+    }
+
+    @Override
+    public boolean handleBackKey() {
+        return false;
     }
 }
