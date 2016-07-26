@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.os.Handler;
 import android.provider.CallLog;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -30,6 +31,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dtv.killerradio.db.SQLiteHelper;
 import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+
+    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,8 +188,18 @@ public class MainActivity extends AppCompatActivity {
         BackKeyHandlingFragment fragment = (BackKeyHandlingFragment) mSectionsPagerAdapter.getItem(mViewPager.getCurrentItem());
         Log.d(TAG, "About to handle back key in " + fragment);
         if (!fragment.handleBackKey()) {
-            Log.d(TAG, "fragment.handleBackKey() = " + fragment.handleBackKey());
-            super.onBackPressed();
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                return;
+            }
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    doubleBackToExitPressedOnce = false;
+                }
+            }, 2000);
         }
     }
 }
