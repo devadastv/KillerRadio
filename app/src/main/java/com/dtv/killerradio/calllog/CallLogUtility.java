@@ -37,4 +37,10 @@ public class CallLogUtility {
         context.getContentResolver().insert(CallLog.Calls.CONTENT_URI, values);
         Toast.makeText(context, "The fake call log is successfully added!", Toast.LENGTH_SHORT).show();
     }
+
+    public void deleteCallLogById(CallLogEntry callLogEntry, Context context) {
+        context.getContentResolver().delete(CallLog.Calls.CONTENT_URI, CallLog.Calls._ID + " = ? ",
+                new String[]{String.valueOf(callLogEntry.getSelectedLogId())});
+        Toast.makeText(context, "Call log at selectedLogId " + callLogEntry.getSelectedLogId() + " is deleted !", Toast.LENGTH_SHORT).show();
+    }
 }

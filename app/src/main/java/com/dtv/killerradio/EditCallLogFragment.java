@@ -40,6 +40,9 @@ import android.widget.ScrollView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.dtv.killerradio.calllog.CallLogEntry;
+import com.dtv.killerradio.calllog.CallLogUtility;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -63,20 +66,13 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
     private static EditText mTimeOfCall;
     private static EditText mDateOfCall;
 
-    // Call log entry date and time
-    private static int year;
-    private static int month;
-    private static int day;
-    private static int hourOfDay; // Hour of day always - 24 hours
-    private static int minute;
-
     private EditText mPhoneNumber;
     private EditText mCallDuration;
     private EditText mCallType;
-    private int callTypeIndex;
     private ViewGroup rootView;
     private String selectedLogId;
 
+    private static CallLogEntry callLogEntry;
 
     public EditCallLogFragment() {
     }
@@ -122,6 +118,25 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
     private void initializeLogEditComponents(final ViewGroup rootView) {
         mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
         mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
+        mCallDuration.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                callLogEntry.setCallDuration(mCallDuration.getText().toString());
+                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(true));
+                return false;
+            }
+        });
+
+        mCallDuration.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                callLogEntry.setCallDuration(mCallDuration.getText().toString());
+                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(hasFocus));
+                if (hasFocus) {
+                    v.performClick();
+                }
+            }
+        });
 
         mDateOfCall = (EditText) rootView.findViewById(R.id.date_of_call);
         mDateOfCall.setInputType(InputType.TYPE_NULL);
@@ -151,9 +166,8 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
             }
         });
 
-        final String[] menuArray = getResources().getStringArray(R.array.call_types);
         mCallType = (EditText) rootView.findViewById(R.id.call_type);
-        mCallType.setInputType(InputType.TYPE_NULL);
+        mCallType.setInputType(InputType.TYPE_NULL); //TODO: Move to xml?
         mCallType.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,12 +176,12 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
                 builder.setCancelable(true);
                 AlertDialog dialog = builder.create();
                 dialog.getListView();
-                builder.setSingleChoiceItems(menuArray, callTypeIndex, new DialogInterface.OnClickListener() {
+                builder.setSingleChoiceItems(callLogEntry.getCallTypeStringArray(), callLogEntry.getCallType(), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d("SurveyList", "User selected " + which);
-                        callTypeIndex = which;
-                        mCallType.setText(menuArray[which]);
+                        callLogEntry.setCallType(which);
+                        mCallType.setText(callLogEntry.getCallTypeString());
                         dialog.dismiss();
                     }
                 });
@@ -200,29 +214,26 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
     }
 
     private boolean attemptDataSubmit() {
+        boolean cancel = false;
+        View focusView = null;
+
         // Reset errors.
         mPhoneNumber.setError(null);
         mCallDuration.setError(null);
 
+
         // Store values at the time of the login attempt.
         String phoneNumber = mPhoneNumber.getText().toString();
 
-        boolean cancel = false;
-        View focusView = null;
-
-        // Check for a valid name, if the user entered one.
-        if (TextUtils.isEmpty(phoneNumber.trim())) {
+        callLogEntry.setPhoneNumber(mPhoneNumber.getText().toString());
+        if (callLogEntry.isPhoneNumberValid()) {
             mPhoneNumber.setError("The phone number is empty");
             focusView = mPhoneNumber;
             cancel = true;
         }
-
-        int duration = 0;
         if (!cancel) {
-            try {
-                Log.d(TAG, "mCallDuration.getText() = " + mCallDuration.getText());
-                duration = Integer.parseInt(mCallDuration.getText().toString().trim());
-            } catch (NumberFormatException e) {
+            callLogEntry.setCallDuration(mCallDuration.getText().toString());
+            if (!callLogEntry.isDurationValid()) {
                 mCallDuration.setError("The duration should be a number");
                 focusView = mCallDuration;
                 cancel = true;
@@ -235,85 +246,21 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
             focusView.requestFocus();
             return false;
         } else {
-            Calendar calendarForCallLog = Calendar.getInstance();
-            Log.d(TAG, "Schedule : Cached values - year = " + year + ", month = " + month
-                    + ", day = " + day + ", hourOfDay = " + hourOfDay + ", minute = " + minute);
-            calendarForCallLog.set(year, month, day, hourOfDay, minute);
-            Log.d(TAG, "Calendar for schedule = " + calendarForCallLog);
-
-            int callTypeToSet;
-            switch (callTypeIndex) {
-                case 0:
-                    callTypeToSet = CallLog.Calls.INCOMING_TYPE;
-                    break;
-                case 1:
-                    callTypeToSet = CallLog.Calls.OUTGOING_TYPE;
-                    break;
-                case 2:
-                    callTypeToSet = CallLog.Calls.MISSED_TYPE;
-                    break;
-                default:
-                    callTypeToSet = CallLog.Calls.INCOMING_TYPE;
-            }
-            deleteSelectedCallLog();
-            addFakeCallLog(phoneNumber, calendarForCallLog, duration, callTypeToSet);
+            CallLogUtility.getInstance().deleteCallLogById(callLogEntry, getActivity());
+            CallLogUtility.getInstance().addCallLog(callLogEntry, getActivity());
             return true;
         }
     }
 
-    private void deleteSelectedCallLog() {
-        getActivity().getContentResolver().delete(CallLog.Calls.CONTENT_URI, CallLog.Calls._ID + " = ? ",
-                new String[]{String.valueOf(selectedLogId)});
-        Toast.makeText(getActivity(), "Call log at selectedLogId " + selectedLogId + " is deleted !", Toast.LENGTH_SHORT).show();
-    }
-
-    private void addFakeCallLog(String phoneNumber, Calendar calendarForCallLog, int duration, int callTypeToSet) {
-        ContentValues values = new ContentValues();
-        values.put(CallLog.Calls.NUMBER, phoneNumber);
-        values.put(CallLog.Calls.DATE, calendarForCallLog.getTimeInMillis());
-        values.put(CallLog.Calls.DURATION, duration);
-        values.put(CallLog.Calls.TYPE, callTypeToSet);
-        values.put(CallLog.Calls.NEW, 1);
-        values.put(CallLog.Calls.CACHED_NAME, "");
-        values.put(CallLog.Calls.CACHED_NUMBER_TYPE, 0);
-        values.put(CallLog.Calls.CACHED_NUMBER_LABEL, "");
-        Log.d(TAG, "Inserting call log placeholder for " + phoneNumber);
-        getActivity().getContentResolver().insert(CallLog.Calls.CONTENT_URI, values);
-        Toast.makeText(getActivity(), "The fake call log is successfully added!", Toast.LENGTH_SHORT).show();
-    }
-
     private void displayLogDetailsInEditScreen(int position) {
+        callLogEntry = new CallLogEntry(getActivity());
         Cursor cursor = mAdapter.getCursor();
         if (cursor != null && cursor.moveToPosition(position)) {
-            cursor.moveToPosition(position);
-
-            // Read values
-            String phNumber = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
-            Calendar callDayTime = Calendar.getInstance();
-            callDayTime.setTimeInMillis(Long.valueOf(cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE))));
-            String callDuration = cursor.getString(cursor.getColumnIndex(CallLog.Calls.DURATION));
-            selectedLogId = cursor.getString(cursor.getColumnIndex(CallLog.Calls._ID));
-            Log.d(TAG, "The id of the selected entry = " + selectedLogId);
-            callTypeIndex = 0;
-            int callType = Integer.parseInt(cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE)));
-            switch (callType) {
-                case CallLog.Calls.INCOMING_TYPE:
-                    callTypeIndex = 0;
-                    break;
-                case CallLog.Calls.OUTGOING_TYPE:
-                    callTypeIndex = 1;
-                    break;
-                case CallLog.Calls.MISSED_TYPE:
-                    callTypeIndex = 2;
-                    break;
-            }
-
-            // Set values to UI
-            mPhoneNumber.setText(phNumber);
-            initTimeOfCall(callDayTime);
-            mCallDuration.setText(callDuration);
-            final String[] menuArray = getResources().getStringArray(R.array.call_types);
-            mCallType.setText(menuArray[callTypeIndex]);
+            callLogEntry.updateValuesFromCallLogCursor(cursor);
+            mPhoneNumber.setText(callLogEntry.getPhoneNumber());
+            initDateAndTimeOfCall();
+            mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay());
+            mCallType.setText(callLogEntry.getCallTypeString());
         } else {
             Log.e(TAG, "Display of selected log in editor failed. Either cursor is null or index is out of range. Check: cursor = " + cursor);
             if (null != cursor) {
@@ -322,9 +269,9 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
         }
     }
 
-    private void initTimeOfCall(Calendar calendar) {
-        updateDateOfCall(calendar);
-        updateTimeOfCall(calendar);
+    private void initDateAndTimeOfCall() {
+        updateDateOfCall();
+        updateTimeOfCall();
     }
 
     static final int PICK_CONTACT = 1;
@@ -431,21 +378,12 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
         }
     }
 
-    private static void updateDateOfCall(Calendar calendar) {
-        year = calendar.get(Calendar.YEAR);
-        month = calendar.get(Calendar.MONTH);
-        day = calendar.get(Calendar.DAY_OF_MONTH);
-
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
-        mDateOfCall.setText(dateFormatter.format(calendar.getTime()));
+    private static void updateDateOfCall() {
+        mDateOfCall.setText(callLogEntry.getDateTextForDisplay());
     }
 
-    private static void updateTimeOfCall(Calendar calendar) {
-        hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
-        minute = calendar.get(Calendar.MINUTE);
-
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
-        mTimeOfCall.setText(dateFormatter.format(calendar.getTime()));
+    private static void updateTimeOfCall() {
+        mTimeOfCall.setText(callLogEntry.getTimeTextForDisplay());
     }
 
     public static class DatePickerFragment extends DialogFragment
@@ -455,13 +393,17 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current date as the default date in the picker if there is no date already set in DatePicker
             final Calendar c = Calendar.getInstance();
+            CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
+
+            int year = callLogEntry.getYear();
+            int month = callLogEntry.getMonth();
+            int day = callLogEntry.getDay();
             if (year > 0 && month > 0 && day > 0) {
                 c.set(year, month, day);
             }
-
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
+            year = c.get(Calendar.YEAR);
+            month = c.get(Calendar.MONTH);
+            day = c.get(Calendar.DAY_OF_MONTH);
 
             // Create a new instance of DatePickerDialog and return it
             return new DatePickerDialog(getActivity(), this, year, month, day);
@@ -470,7 +412,8 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
         public void onDateSet(DatePicker view, int year, int month, int day) {
             Calendar newDate = Calendar.getInstance();
             newDate.set(year, month, day);
-            EditCallLogFragment.updateDateOfCall(newDate);
+            EditCallLogFragment.callLogEntry.updateDateOfCall(newDate);
+            EditCallLogFragment.updateDateOfCall();
         }
     }
 
@@ -481,21 +424,27 @@ public class EditCallLogFragment extends Fragment implements LoaderManager.Loade
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current time as the default values for the picker
             final Calendar c = Calendar.getInstance();
+            CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
+            int hourOfDay = callLogEntry.getHourOfDay();
+            int minute = callLogEntry.getMinute();
             if (hourOfDay > 0 && minute > 0) {
-                c.set(year, month, day, hourOfDay, minute);
+                c.set(callLogEntry.getYear(), callLogEntry.getMonth(), callLogEntry.getDay(), hourOfDay, minute);
             }
-            int hour = c.get(Calendar.HOUR_OF_DAY);
-            int minute = c.get(Calendar.MINUTE);
+            hourOfDay = c.get(Calendar.HOUR_OF_DAY);
+            minute = c.get(Calendar.MINUTE);
 
             // Create a new instance of TimePickerDialog and return it
-            return new TimePickerDialog(getActivity(), this, hour, minute,
+            return new TimePickerDialog(getActivity(), this, hourOfDay, minute,
                     DateFormat.is24HourFormat(getActivity()));
         }
 
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             Calendar newDate = Calendar.getInstance();
-            newDate.set(year, month, day, hourOfDay, minute);
-            EditCallLogFragment.updateTimeOfCall(newDate);
+            CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
+            newDate.set(callLogEntry.getYear(), callLogEntry.getMonth(),
+                    callLogEntry.getDay(), hourOfDay, minute);
+            EditCallLogFragment.callLogEntry.updateTimeOfCall(newDate);
+            EditCallLogFragment.updateTimeOfCall();
         }
     }
 }
