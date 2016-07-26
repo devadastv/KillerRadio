@@ -1,7 +1,7 @@
 package com.dtv.killerradio.calllog;
 
 import android.content.Context;
-import android.content.res.Resources;
+import android.database.Cursor;
 import android.provider.CallLog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,6 +46,8 @@ public class CallLogEntry {
     private int callType;
     private String callTypeString;
     private String[] callTypeStringArray;
+
+    private String selectedLogId;
 
     private Context context;
 
@@ -282,5 +284,38 @@ public class CallLogEntry {
 
     public String[] getCallTypeStringArray() {
         return callTypeStringArray;
+    }
+
+    public String getSelectedLogId() {
+        return selectedLogId;
+    }
+
+    public void setSelectedLogId(String selectedLogId) {
+        this.selectedLogId = selectedLogId;
+    }
+
+    public void updateValuesFromCallLogCursor(Cursor cursor) {
+        setPhoneNumber(cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER)));
+        Calendar callDayTime = Calendar.getInstance();
+        callDayTime.setTimeInMillis(Long.valueOf(cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE))));
+        updateDateOfCall(callDayTime);
+        updateTimeOfCall(callDayTime);
+        setCallDuration(Integer.toString(cursor.getInt(cursor.getColumnIndex(CallLog.Calls.DURATION))));
+        setSelectedLogId(cursor.getString(cursor.getColumnIndex(CallLog.Calls._ID)));
+        Log.d(TAG, "The id of the selected entry = " + getSelectedLogId());
+        int callTypeFromDb = Integer.parseInt(cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE)));
+        int callTypeIndex = 0;
+        switch (callTypeFromDb) {
+            case CallLog.Calls.INCOMING_TYPE:
+                callTypeIndex = INCOMING_TYPE;
+                break;
+            case CallLog.Calls.OUTGOING_TYPE:
+                callTypeIndex = OUTGOING_TYPE;
+                break;
+            case CallLog.Calls.MISSED_TYPE:
+                callTypeIndex = MISSED_TYPE;
+                break;
+        }
+        setCallType(callTypeIndex);
     }
 }
