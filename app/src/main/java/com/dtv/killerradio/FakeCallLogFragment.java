@@ -71,8 +71,6 @@ public class FakeCallLogFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "Inside FakeCalllogFragment - onCreateView method");
 
-        callLogEntry = new CallLogEntry(getActivity());
-
         View rootView = inflater.inflate(R.layout.fragment_fake_call_log, container, false);
         mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
         mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
