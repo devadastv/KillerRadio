@@ -122,10 +122,10 @@ public class MainActivity extends AppCompatActivity {
                     case 0:
                         fragment = FakeCallLogFragment.newInstance();
                         break;
+//                    case 1:
+//                        fragment = CallLogSchedulesFragment.newInstance();
+//                        break;
                     case 1:
-                        fragment = CallLogSchedulesFragment.newInstance();
-                        break;
-                    case 2:
                         fragment = EditCallLogFragment.newInstance();
                         break;
                     default:
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 3;
+            return 2;
         }
 
         @Override
@@ -151,16 +151,10 @@ public class MainActivity extends AppCompatActivity {
             switch (position) {
                 case 0:
                     return "FAKE CALL LOG";
-                case 1:
-                    return "CALL LOG SCHEDULES";
-                case 2:
-                    return "EDIT CALL LOG";
 //                case 1:
-//                    return "FAKE SMS LOG";
-//                case 2:
-//                    return "FAKE SMS";
-//                default:
-//                    return "Title " + position;
+//                    return "CALL LOG SCHEDULES";
+                case 1:
+                    return "EDIT CALL LOG";
             }
             return null;
         }
