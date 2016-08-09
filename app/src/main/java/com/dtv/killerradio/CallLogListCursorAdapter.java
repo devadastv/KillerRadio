@@ -45,6 +45,7 @@ public class CallLogListCursorAdapter extends CursorAdapter {
             TextView mDate = (TextView) view.findViewById(R.id.item_date);
             TextView mTime = (TextView) view.findViewById(R.id.item_time);
             ImageView mContactImage = (ImageView) view.findViewById(R.id.contact_image);
+            ImageView mCallTypeImage = (ImageView) view.findViewById(R.id.item_type);
 
             // Extract properties from cursor
 
@@ -77,7 +78,21 @@ public class CallLogListCursorAdapter extends CursorAdapter {
                 mContactImage.setImageResource(R.drawable.ic_contact);
             }
 
-            int priority = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE));
+            int callType = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE));
+            switch (callType){
+                case CallLog.Calls.INCOMING_TYPE:
+                    mCallTypeImage.setImageResource(R.drawable.incoming);
+                    break;
+                case CallLog.Calls.OUTGOING_TYPE:
+                    mCallTypeImage.setImageResource(R.drawable.outgoing);
+                    break;
+                case CallLog.Calls.MISSED_TYPE:
+                    mCallTypeImage.setImageResource(R.drawable.missed_call);
+                    break;
+                default:
+                    mCallTypeImage.setVisibility(View.GONE);
+            }
+
             if (TextUtils.isEmpty(name)) {
                 name = number;
                 number = context.getString(R.string.unsaved);
