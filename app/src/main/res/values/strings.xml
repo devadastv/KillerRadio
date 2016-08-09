@@ -30,4 +30,5 @@
     <string name="calllog_edit_empty_placeholder"> </string>
     <string name="discard">Discard</string>
     <string name="error_call_log_edit_message">Error in fetching the requested log entry !</string>
+    <string name="unsaved">Unsaved</string>
 </resources>

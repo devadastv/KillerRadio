@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -17,6 +18,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
@@ -37,6 +39,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -60,7 +63,7 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
 
     private static final String TAG = "EditCallLogFragment";
 
-    private SimpleCursorAdapter mAdapter;
+    private CursorAdapter mAdapter;
 
     private ProgressBar mProgressBar;
 
@@ -107,9 +110,10 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
 
         // Create an empty adapter we will use to display the loaded data.
         // We pass null for the cursor, then update it in onLoadFinished()
-        mAdapter = new SimpleCursorAdapter(getActivity(),
-                android.R.layout.simple_list_item_2, null,
-                fromColumns, toViews, 0);
+//        mAdapter = new SimpleCursorAdapter(getActivity(),
+//                android.R.layout.simple_list_item_2, null,
+//                fromColumns, toViews, 0);
+        mAdapter = new CallLogListCursorAdapter(this.getActivity(), null);
         mEditCallLogList.setAdapter(mAdapter);
         mEditCallLogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -370,8 +374,7 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
         Log.d(TAG, "Inside onLoadFinished with cursor " + data);
-        mProgressBar.setVisibility(View.GONE);
-        mAdapter.swapCursor(data);
+        handleCursorUpdate(data);
     }
 
     // Called when a previously created loader is reset, making the data unavailable
@@ -379,10 +382,13 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-        mProgressBar.setVisibility(View.GONE);
-        mAdapter.swapCursor(null);
+        handleCursorUpdate(null);
     }
 
+    private void handleCursorUpdate(Cursor cursor) {
+        mProgressBar.setVisibility(View.GONE);
+        mAdapter.swapCursor(cursor);
+    }
 
     @Override
     public void setMenuVisibility(final boolean visible) {

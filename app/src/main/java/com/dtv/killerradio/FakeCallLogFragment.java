@@ -490,7 +490,7 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
             Calendar newDate = Calendar.getInstance();
             newDate.set(callLogInsertionYear, callLogInsertionMonth, callLogInsertionDay, hourOfDay, minute);
             FakeCallLogFragment.updateTimeOfInsertion(newDate, true);
-            FakeCallLogFragment.callLogEntry.setMonth(4);
+//            FakeCallLogFragment.callLogEntry.setMonth(4);
         }
     }
 }
