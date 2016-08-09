@@ -48,8 +48,10 @@ public class CallLogListCursorAdapter extends CursorAdapter {
 
             // Extract properties from cursor
 
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME));
+
             String number = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER));
+            Cursor contactLookupCursor = getContactLookupCursor(number, context);
+            String name = getContactName(contactLookupCursor); //cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME));
 
             Calendar now = Calendar.getInstance();
             Calendar callTimeCalendar = Calendar.getInstance();
@@ -64,14 +66,12 @@ public class CallLogListCursorAdapter extends CursorAdapter {
             dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
             String time = dateFormatter.format(callTimeCalendar.getTime());
 
-            int contactID = getContactIDFromNumber(number, context);
+            int contactID = getContactID(contactLookupCursor);
             Log.d(TAG, "contactID = " + contactID + " for log item at index = " + cursor.getPosition());
             if (contactID != -1) {
-                Uri u = getPhotoUri(contactID, context);
-                Log.d(TAG, "URI for contact picture is " + u);
-                if (u != null) {
-                    Log.d(TAG, "Image is set for contact " + contactID);
-                    mContactImage.setImageURI(u);
+                Uri imageUri = getPhotoUri(contactID, context);
+                if (imageUri != null) {
+                    mContactImage.setImageURI(imageUri);
                 }
             } else {
                 mContactImage.setImageResource(R.drawable.ic_contact);
@@ -86,18 +86,36 @@ public class CallLogListCursorAdapter extends CursorAdapter {
             mNumber.setText(String.valueOf(number));
             mDate.setText(date);
             mTime.setText(time);
+
+            if (contactLookupCursor != null && !contactLookupCursor.isClosed()) {
+                contactLookupCursor.close();
+            }
         }
     }
 
-    public static int getContactIDFromNumber(String contactNumber, Context context) {
+    private Cursor getContactLookupCursor(String contactNumber, Context context) {
         contactNumber = Uri.encode(contactNumber);
+        Cursor contactLookupCursor = context.getContentResolver().query(
+                Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, contactNumber),
+                new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup._ID}, null, null, null);
+        return contactLookupCursor;
+    }
+
+    private int getContactID(Cursor contactLookupCursor) {
         int phoneContactID = -1;
-        Cursor contactLookupCursor = context.getContentResolver().query(Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, contactNumber), new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup._ID}, null, null, null);
-        while (contactLookupCursor.moveToNext()) {
+        if (contactLookupCursor.moveToFirst()) {
             phoneContactID = contactLookupCursor.getInt(contactLookupCursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID));
         }
-        contactLookupCursor.close();
         return phoneContactID;
+    }
+
+    private String getContactName(Cursor contactLookupCursor) {
+        String name = null;
+        if (contactLookupCursor.moveToFirst()) {
+            name = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME));
+        }
+        Log.d(TAG, "Inside getContactName = " + name);
+        return name;
     }
 
     /**
@@ -105,7 +123,7 @@ public class CallLogListCursorAdapter extends CursorAdapter {
      */
     public Uri getPhotoUri(int contactID, Context context) {
         try {
-            Cursor cur = mContext.getContentResolver().query(
+            Cursor cur = context.getContentResolver().query(
                     ContactsContract.Data.CONTENT_URI,
                     null,
                     ContactsContract.Data.CONTACT_ID + "=" + contactID + " AND "
@@ -114,6 +132,7 @@ public class CallLogListCursorAdapter extends CursorAdapter {
                     null);
             if (cur != null) {
                 if (!cur.moveToFirst()) {
+                    cur.close();
                     return null; // no photo
                 }
             } else {
