@@ -392,7 +392,7 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
 
     @Override
     public void setMenuVisibility(final boolean visible) {
-        Log.d(TAG, "Inside setMenuVisibility of CallLogSchedulesListFragment...");
+        Log.d(TAG, "Inside setMenuVisibility of EditCallLogFragment...");
         super.setMenuVisibility(visible);
         if (visible && (null != rootView)) {
             switchToListScreen(rootView);

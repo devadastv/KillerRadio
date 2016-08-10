@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -38,80 +40,93 @@ public class CallLogListCursorAdapter extends CursorAdapter {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        if (null != cursor) {
-            TextView mName = (TextView) view.findViewById(R.id.item_name);
-            TextView mNumber = (TextView) view.findViewById(R.id.item_number);
-            TextView mDate = (TextView) view.findViewById(R.id.item_date);
-            TextView mTime = (TextView) view.findViewById(R.id.item_time);
-            ImageView mContactImage = (ImageView) view.findViewById(R.id.contact_image);
-            ImageView mCallTypeImage = (ImageView) view.findViewById(R.id.item_type);
-
-            // Extract properties from cursor
-
-
-            String number = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER));
-            Cursor contactLookupCursor = getContactLookupCursor(number, context);
-            String name = getContactName(contactLookupCursor); //cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME));
-
-            Calendar now = Calendar.getInstance();
-            Calendar callTimeCalendar = Calendar.getInstance();
-            callTimeCalendar.setTimeInMillis(Long.valueOf(cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE))));
-            SimpleDateFormat dateFormatter;
-            if (now.get(Calendar.YEAR) == callTimeCalendar.get(Calendar.YEAR)) {
-                dateFormatter = new SimpleDateFormat("dd-MMM", Locale.US);
-            } else {
-                dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
-            }
-            String date = dateFormatter.format(callTimeCalendar.getTime());
-            dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
-            String time = dateFormatter.format(callTimeCalendar.getTime());
-
-            int contactID = getContactID(contactLookupCursor);
-            Log.d(TAG, "contactID = " + contactID + " for log item at index = " + cursor.getPosition());
-            if (contactID != -1) {
-                Uri imageUri = getPhotoUri(contactID, context);
-                if (imageUri != null) {
-                    mContactImage.setImageURI(imageUri);
-                }
-            } else {
-                mContactImage.setImageResource(R.drawable.ic_contact);
-            }
-
-            int callType = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE));
-            switch (callType){
-                case CallLog.Calls.INCOMING_TYPE:
-                    mCallTypeImage.setImageResource(R.drawable.incoming);
-                    break;
-                case CallLog.Calls.OUTGOING_TYPE:
-                    mCallTypeImage.setImageResource(R.drawable.outgoing);
-                    break;
-                case CallLog.Calls.MISSED_TYPE:
-                    mCallTypeImage.setImageResource(R.drawable.missed_call);
-                    break;
-                default:
-                    mCallTypeImage.setVisibility(View.GONE);
-            }
-
-            if (TextUtils.isEmpty(name)) {
-                name = number;
-                number = context.getString(R.string.unsaved);
-            }
-            mName.setText(name);
-            mNumber.setText(String.valueOf(number));
-            mDate.setText(date);
-            mTime.setText(time);
-
+    public void bindView(View view, Context context, Cursor logCursor) {
+        if (null != logCursor) {
+            Cursor contactLookupCursor = getContactLookupCursor(logCursor, context);
+            setNameAndNumber(view, logCursor, contactLookupCursor);
+            setDateAndTime(view, logCursor);
+            setContactImage(view, logCursor, contactLookupCursor);
+            setCallTypeIcon(view, logCursor);
             if (contactLookupCursor != null && !contactLookupCursor.isClosed()) {
                 contactLookupCursor.close();
             }
         }
     }
 
-    private Cursor getContactLookupCursor(String contactNumber, Context context) {
-        contactNumber = Uri.encode(contactNumber);
+    private void setNameAndNumber(View view, Cursor logCursor, Cursor contactLookupCursor) {
+        TextView mName = (TextView) view.findViewById(R.id.item_name);
+        TextView mNumber = (TextView) view.findViewById(R.id.item_number);
+        String number = logCursor.getString(logCursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER));
+        String name = getContactName(contactLookupCursor); //logCursor.getString(logCursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME));
+        if (TextUtils.isEmpty(name)) {
+            name = number;
+            number = mContext.getString(R.string.unsaved);
+        }
+        mName.setText(name);
+        mNumber.setText(String.valueOf(number));
+    }
+
+    private void setDateAndTime(View view, Cursor logCursor) {
+        TextView mDate = (TextView) view.findViewById(R.id.item_date);
+        TextView mTime = (TextView) view.findViewById(R.id.item_time);
+        Calendar now = Calendar.getInstance();
+        Calendar callTimeCalendar = Calendar.getInstance();
+        callTimeCalendar.setTimeInMillis(Long.valueOf(logCursor.getString(logCursor.getColumnIndex(CallLog.Calls.DATE))));
+        SimpleDateFormat dateFormatter;
+        if (now.get(Calendar.YEAR) == callTimeCalendar.get(Calendar.YEAR)) {
+            dateFormatter = new SimpleDateFormat("dd-MMM", Locale.US);
+        } else {
+            dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+        }
+        String date = dateFormatter.format(callTimeCalendar.getTime());
+        dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
+        String time = dateFormatter.format(callTimeCalendar.getTime());
+
+        mDate.setText(date);
+        mTime.setText(time);
+    }
+
+    private void setContactImage(View view, Cursor logCursor, Cursor contactLookupCursor) {
+        ImageView mContactImage = (ImageView) view.findViewById(R.id.contact_image);
+        int contactID = getContactID(contactLookupCursor);
+//        Log.d(TAG, "contactID = " + contactID + " for log item at index = " + logCursor.getPosition());
+        if (contactID != -1) {
+            Uri imageUri = getPhotoUri(contactID, mContext);
+            if (imageUri != null) {
+                    mContactImage.setImageURI(imageUri);
+                if (null == mContactImage.getDrawable()) {
+                    mContactImage.setImageResource(R.drawable.ic_contact);
+                }
+            } else {
+                mContactImage.setImageResource(R.drawable.ic_contact);
+            }
+        } else {
+            mContactImage.setImageResource(R.drawable.ic_contact);
+        }
+    }
+
+    private void setCallTypeIcon(View view, Cursor logCursor) {
+        ImageView mCallTypeImage = (ImageView) view.findViewById(R.id.item_type);
+        int callType = logCursor.getInt(logCursor.getColumnIndexOrThrow(CallLog.Calls.TYPE));
+        switch (callType) {
+            case CallLog.Calls.INCOMING_TYPE:
+                mCallTypeImage.setImageResource(R.drawable.incoming);
+                break;
+            case CallLog.Calls.OUTGOING_TYPE:
+                mCallTypeImage.setImageResource(R.drawable.outgoing);
+                break;
+            case CallLog.Calls.MISSED_TYPE:
+                mCallTypeImage.setImageResource(R.drawable.missed_call);
+                break;
+            default:
+                mCallTypeImage.setVisibility(View.GONE);
+        }
+    }
+
+    private Cursor getContactLookupCursor(Cursor logCursor, Context context) {
+        String contactNumber = logCursor.getString(logCursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER));
         Cursor contactLookupCursor = context.getContentResolver().query(
-                Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, contactNumber),
+                Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(contactNumber)),
                 new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup._ID}, null, null, null);
         return contactLookupCursor;
     }
@@ -129,7 +144,7 @@ public class CallLogListCursorAdapter extends CursorAdapter {
         if (contactLookupCursor.moveToFirst()) {
             name = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME));
         }
-        Log.d(TAG, "Inside getContactName = " + name);
+//        Log.d(TAG, "Inside getContactName = " + name);
         return name;
     }
 
