@@ -1,45 +1,24 @@
 package com.dtv.killerradio;
 
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.content.ContentValues;
-import android.content.DialogInterface;
+import android.os.Bundle;
 import android.os.Handler;
-import android.provider.CallLog;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
-import android.text.InputType;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dtv.killerradio.db.SQLiteHelper;
 import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -122,12 +101,15 @@ public class MainActivity extends AppCompatActivity {
                     case 0:
                         fragment = FakeCallLogFragment.newInstance();
                         break;
-//                    case 1:
-//                        fragment = CallLogSchedulesFragment.newInstance();
-//                        break;
                     case 1:
                         fragment = EditCallLogFragment.newInstance();
                         break;
+                    case 2:
+                        if (AppConstants.CALLLOG_SCHEDULE_ENABLED) {
+                            fragment = CallLogSchedulesFragment.newInstance();
+                            break;
+                        }
+                        // else return null or allowed fall thru to default;
                     default:
                         return null;
                 }
@@ -143,7 +125,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 2;
+            if (AppConstants.CALLLOG_SCHEDULE_ENABLED) {
+                return 3;
+            } else {
+                return 2;
+            }
         }
 
         @Override
@@ -151,10 +137,12 @@ public class MainActivity extends AppCompatActivity {
             switch (position) {
                 case 0:
                     return "FAKE CALL LOG";
-//                case 1:
-//                    return "CALL LOG SCHEDULES";
                 case 1:
                     return "EDIT CALL LOG";
+                case 2:
+                    if (AppConstants.CALLLOG_SCHEDULE_ENABLED) {
+                        return "CALL LOG SCHEDULES";
+                    }
             }
             return null;
         }
@@ -173,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void launchCallLogSchedulesFragment() {
-        mViewPager.setCurrentItem(1);
+        mViewPager.setCurrentItem(2);
     }
 
     @Override
