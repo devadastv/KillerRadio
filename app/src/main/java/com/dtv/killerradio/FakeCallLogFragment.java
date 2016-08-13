@@ -25,6 +25,7 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioGroup;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -64,6 +65,7 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
     private static int callLogInsertionMinute;
 
     private static CallLogEntry callLogEntry;
+    private RadioGroup callTypeRadioGroup;
 
     public FakeCallLogFragment() {
     }
@@ -129,28 +131,55 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
             }
         });
 
-        mCallType = (EditText) rootView.findViewById(R.id.call_type);
-        mCallType.setInputType(InputType.TYPE_NULL); //TODO: Move to xml?
-        mCallType.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Call Type:");
-                builder.setCancelable(true);
-                AlertDialog dialog = builder.create();
-                dialog.getListView();
-                builder.setSingleChoiceItems(callLogEntry.getCallTypeStringArray(), callLogEntry.getCallType(), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.d("SurveyList", "User selected " + which);
-                        callLogEntry.setCallType(which);
-                        mCallType.setText(callLogEntry.getCallTypeString());
-                        dialog.dismiss();
+        if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
+            callTypeRadioGroup = (RadioGroup) rootView.findViewById(R.id.call_type_radiogroup);
+            callTypeRadioGroup.setVisibility(View.VISIBLE);
+            callTypeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, int id) {
+                    Log.d(TAG, "User selected radiobutton = " + id);
+                    int callType;
+                    switch (id) {
+                        case R.id.incoming_type_radiobutton:
+                            callType = 0;
+                            break;
+                        case R.id.outgoing_type_radiobutton:
+                            callType = 1;
+                            break;
+                        case R.id.missedcall_type_radiobutton:
+                            callType = 2;
+                            break;
+                        default:
+                            callType = 0;
                     }
-                });
-                builder.show();
-            }
-        });
+                    callLogEntry.setCallType(callType);
+                }
+            });
+        } else {
+            mCallType = (EditText) rootView.findViewById(R.id.call_type);
+            mCallType.setVisibility(View.VISIBLE);
+            mCallType.setInputType(InputType.TYPE_NULL); //TODO: Move to xml?
+            mCallType.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Call Type:");
+                    builder.setCancelable(true);
+                    AlertDialog dialog = builder.create();
+                    dialog.getListView();
+                    builder.setSingleChoiceItems(callLogEntry.getCallTypeStringArray(), callLogEntry.getCallType(), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.d("SurveyList", "User selected " + which);
+                            callLogEntry.setCallType(which);
+                            mCallType.setText(callLogEntry.getCallTypeString());
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.show();
+                }
+            });
+        }
 
         mInsertTimeCheckBox = (CheckBox) rootView.findViewById(R.id.insert_time_checkbox);
         float scaledDensity = getResources().getDisplayMetrics().scaledDensity;
@@ -214,7 +243,11 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
         mPhoneNumber.setText(callLogEntry.getPhoneNumber());
         initDateAndTimeOfCall();
         mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay());
-        mCallType.setText(callLogEntry.getCallTypeString());
+        if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
+            callTypeRadioGroup.check(R.id.incoming_type_radiobutton);
+        } else {
+            mCallType.setText(callLogEntry.getCallTypeString());
+        }
         mInsertTimeCheckBox.setChecked(true);
         initInsertTimeWithCurrentTime();
     }

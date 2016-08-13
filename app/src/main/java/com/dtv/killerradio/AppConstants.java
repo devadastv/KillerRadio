@@ -11,5 +11,7 @@ public interface AppConstants {
      */
     boolean CALLLOG_SCHEDULE_ENABLED = false;
 
+    boolean CALLTYPE_SELECTION_USING_RADIO = true;
+
     boolean DISPLAY_NAME_AND_PICTURE_IN_EDIT_SCREENS = false;
 }
