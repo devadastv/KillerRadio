@@ -34,7 +34,7 @@
                 android:orientation="horizontal">
 
                 <android.support.design.widget.TextInputLayout
-                    android:layout_width="fill_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1">
 
@@ -135,6 +135,14 @@
 
             </android.support.design.widget.TextInputLayout>
 
+            <TextView
+                android:id="@+id/call_type_hint"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="4dp"
+                android:text="@string/call_type"
+                android:textColorHighlight="@android:color/primary_text_dark" />
 
             <RadioGroup
                 android:id="@+id/call_type_radiogroup"
@@ -230,7 +238,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/submit"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:background="@color/submitButtonGreen"
+                android:textColor="@color/abc_primary_text_material_dark" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
