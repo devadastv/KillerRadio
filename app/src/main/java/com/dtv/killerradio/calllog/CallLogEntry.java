@@ -40,7 +40,7 @@ public class CallLogEntry {
     private String timeTextForDisplay;
 
     private String callDuration;
-//    private String callDurationTextForDisplay;
+    //    private String callDurationTextForDisplay;
     private String randomDurationText;
 
     private int callType;

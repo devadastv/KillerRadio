@@ -38,6 +38,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -77,6 +78,7 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
 
     private static CallLogEntry callLogEntry;
     private volatile boolean isEditViewVisible;
+    private RadioGroup callTypeRadioGroup;
 
     public EditCallLogFragment() {
     }
@@ -105,9 +107,8 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         mEditCallLogList.setEmptyView(rootView.findViewById(android.R.id.empty));
 
         // For the cursor adapter, specify which columns go into which views
-        String[] fromColumns = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE};
-        int[] toViews = {android.R.id.text1, android.R.id.text2};
-
+//        String[] fromColumns = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE};
+//        int[] toViews = {android.R.id.text1, android.R.id.text2};
         // Create an empty adapter we will use to display the loaded data.
         // We pass null for the cursor, then update it in onLoadFinished()
 //        mAdapter = new SimpleCursorAdapter(getActivity(),
@@ -176,28 +177,55 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
             }
         });
 
-        mCallType = (EditText) rootView.findViewById(R.id.call_type);
-        mCallType.setInputType(InputType.TYPE_NULL); //TODO: Move to xml?
-        mCallType.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Call Type:");
-                builder.setCancelable(true);
-                AlertDialog dialog = builder.create();
-                dialog.getListView();
-                builder.setSingleChoiceItems(callLogEntry.getCallTypeStringArray(), callLogEntry.getCallType(), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.d("SurveyList", "User selected " + which);
-                        callLogEntry.setCallType(which);
-                        mCallType.setText(callLogEntry.getCallTypeString());
-                        dialog.dismiss();
+        if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
+            callTypeRadioGroup = (RadioGroup) rootView.findViewById(R.id.call_type_radiogroup);
+            callTypeRadioGroup.setVisibility(View.VISIBLE);
+            callTypeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, int id) {
+                    Log.d(TAG, "User selected radiobutton = " + id);
+                    int callType;
+                    switch (id) {
+                        case R.id.incoming_type_radiobutton:
+                            callType = 0;
+                            break;
+                        case R.id.outgoing_type_radiobutton:
+                            callType = 1;
+                            break;
+                        case R.id.missedcall_type_radiobutton:
+                            callType = 2;
+                            break;
+                        default:
+                            callType = 0;
                     }
-                });
-                builder.show();
-            }
-        });
+                    callLogEntry.setCallType(callType);
+                }
+            });
+        } else {
+            mCallType = (EditText) rootView.findViewById(R.id.call_type);
+            mCallType.setVisibility(View.VISIBLE);
+            mCallType.setInputType(InputType.TYPE_NULL); //TODO: Move to xml?
+            mCallType.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Call Type:");
+                    builder.setCancelable(true);
+                    AlertDialog dialog = builder.create();
+                    dialog.getListView();
+                    builder.setSingleChoiceItems(callLogEntry.getCallTypeStringArray(), callLogEntry.getCallType(), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.d("SurveyList", "User selected " + which);
+                            callLogEntry.setCallType(which);
+                            mCallType.setText(callLogEntry.getCallTypeString());
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.show();
+                }
+            });
+        }
 
         Button mSubmitButton = (Button) rootView.findViewById(R.id.submit_button);
         mSubmitButton.setOnClickListener(new View.OnClickListener() {
@@ -278,7 +306,25 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
             mPhoneNumber.setText(callLogEntry.getPhoneNumber());
             initDateAndTimeOfCall();
             mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay());
-            mCallType.setText(callLogEntry.getCallTypeString());
+            if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
+                int callTypeRadioButtonID;
+                switch (callLogEntry.getCallType()) {
+                    case CallLogEntry.INCOMING_TYPE:
+                        callTypeRadioButtonID = R.id.incoming_type_radiobutton;
+                        break;
+                    case CallLogEntry.OUTGOING_TYPE:
+                        callTypeRadioButtonID = R.id.outgoing_type_radiobutton;
+                        break;
+                    case CallLogEntry.MISSED_TYPE:
+                        callTypeRadioButtonID = R.id.missedcall_type_radiobutton;
+                        break;
+                    default:
+                        callTypeRadioButtonID = R.id.incoming_type_radiobutton;
+                }
+                callTypeRadioGroup.check(callTypeRadioButtonID);
+            } else {
+                mCallType.setText(callLogEntry.getCallTypeString());
+            }
         } else {
             Log.e(TAG, "Display of selected log in editor failed. Either cursor is null or index is out of range. Check: cursor = " + cursor);
             if (null != cursor) {
@@ -413,8 +459,7 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         if (isEditViewVisible) {
             switchToListScreen(rootView);
             return true;
-        } else
-        {
+        } else {
             return false;
         }
     }
