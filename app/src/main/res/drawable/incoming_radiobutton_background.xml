@@ -16,14 +16,14 @@
                     <!--<solid android:color="#d4e9ff" />-->
                     <stroke
                         android:width="2dp"
-                        android:color="#c7ffb9" />
+                        android:color="@color/calltype_incoming" />
                 </shape>
             </item>
 
             <item>
                 <bitmap
                     android:gravity="center"
-                    android:src="@drawable/incoming" />
+                    android:src="@drawable/incoming_small_selected" />
             </item>
         </layer-list>
     </item>
@@ -37,14 +37,14 @@
                     <!--<solid android:color="#cecece" />-->
                     <stroke
                         android:width="2dp"
-                        android:color="#f4f4f4" />
+                        android:color="@color/calltype_unselected" />
                 </shape>
             </item>
 
             <item>
                 <bitmap
                     android:gravity="center"
-                    android:src="@drawable/incoming" />
+                    android:src="@drawable/incoming_small_unselected" />
             </item>
         </layer-list>
     </item>

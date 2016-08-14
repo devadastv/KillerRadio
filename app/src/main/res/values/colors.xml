@@ -7,4 +7,10 @@
     <color name="discardButtonRed">#f14545</color>
     <color name="blackText">#000000</color>
     <color name="greyText">#7c7c7c</color>
+
+    <!--CALL TYPE COLORS-->
+    <color name="calltype_incoming">#009688</color>
+    <color name="calltype_outgoing">#03a9f4</color>
+    <color name="calltype_missedcall">#f44336</color>
+    <color name="calltype_unselected">#9a9e9e9e</color>
 </resources>
