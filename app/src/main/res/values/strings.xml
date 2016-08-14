@@ -13,6 +13,7 @@
     <string name="insert_now">Insert Now</string>
     <string name="date_of_insertion">Insert Date</string>
     <string name="time_of_insertion">Insert Time</string>
+    <string name="empty_placeholder_string">.</string>
 
     <string name="submit">Submit</string>
 
@@ -27,7 +28,6 @@
 
     <!-- Edit Call Log Fragment -->
     <string name="empty_call_log_list_message">The call log is empty!</string>
-    <string name="calllog_edit_empty_placeholder"> </string>
     <string name="discard">Discard</string>
     <string name="error_call_log_edit_message">Error in fetching the requested log entry !</string>
     <string name="unsaved">Unsaved</string>

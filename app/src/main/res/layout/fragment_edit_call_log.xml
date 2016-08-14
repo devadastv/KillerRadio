@@ -71,7 +71,7 @@
                         android:inputType="phone"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="@string/calllog_edit_empty_placeholder" />
+                        android:text="@string/empty_placeholder_string" />
                 </android.support.design.widget.TextInputLayout>
 
                 <ImageButton
@@ -101,7 +101,7 @@
                         android:inputType="datetime"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="@string/calllog_edit_empty_placeholder" />
+                        android:text="@string/empty_placeholder_string" />
 
                 </android.support.design.widget.TextInputLayout>
 
@@ -119,7 +119,7 @@
                         android:inputType="datetime"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="@string/calllog_edit_empty_placeholder" />
+                        android:text="@string/empty_placeholder_string" />
 
                 </android.support.design.widget.TextInputLayout>
 
@@ -138,7 +138,7 @@
                     android:inputType="number"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="@string/calllog_edit_empty_placeholder" />
+                    android:text="@string/empty_placeholder_string" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -156,7 +156,7 @@
                     android:inputType="textCapWords"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="@string/calllog_edit_empty_placeholder"
+                    android:text="@string/empty_placeholder_string"
                     android:visibility="gone" />
 
             </android.support.design.widget.TextInputLayout>

@@ -45,7 +45,8 @@
                         android:hint="@string/phone_number"
                         android:inputType="phone"
                         android:maxLines="1"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:text="@string/empty_placeholder_string" />
                 </android.support.design.widget.TextInputLayout>
 
                 <ImageButton
@@ -74,7 +75,8 @@
                         android:hint="@string/date_of_call"
                         android:inputType="datetime"
                         android:maxLines="1"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:text="@string/empty_placeholder_string" />
 
                 </android.support.design.widget.TextInputLayout>
 
@@ -91,7 +93,8 @@
                         android:hint="@string/time_of_call"
                         android:inputType="datetime"
                         android:maxLines="1"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:text="@string/empty_placeholder_string" />
 
                 </android.support.design.widget.TextInputLayout>
 
@@ -109,7 +112,8 @@
                     android:hint="@string/call_duration"
                     android:inputType="number"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:text="@string/empty_placeholder_string" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -194,7 +198,8 @@
                         android:hint="@string/date_of_insertion"
                         android:inputType="datetime"
                         android:maxLines="1"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:text="@string/empty_placeholder_string" />
 
                 </android.support.design.widget.TextInputLayout>
 
@@ -211,7 +216,8 @@
                         android:hint="@string/time_of_insertion"
                         android:inputType="datetime"
                         android:maxLines="1"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:text="@string/empty_placeholder_string" />
 
                 </android.support.design.widget.TextInputLayout>
 
