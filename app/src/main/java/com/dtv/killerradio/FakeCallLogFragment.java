@@ -83,12 +83,11 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
         mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
         mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
 
-        mCallDuration.setOnTouchListener(new View.OnTouchListener() {
+        mCallDuration.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public void onClick(View view) {
                 callLogEntry.setCallDuration(mCallDuration.getText().toString());
                 mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(true));
-                return false;
             }
         });
 
