@@ -4,6 +4,7 @@
     <string name="section_format">Hello World from section: %1$d</string>
 
     <!--Fake Call Log-->
+    <string name="select_contact">Select Contact</string>
     <string name="phone_number">Phone Number</string>
     <string name="date_of_call">Date of Call</string>
     <string name="time_of_call">Time of Call</string>
@@ -14,6 +15,9 @@
     <string name="date_of_insertion">Insert Date</string>
     <string name="time_of_insertion">Insert Time</string>
     <string name="empty_placeholder_string">.</string>
+    <string name="choose_contact">Choose Contact</string>
+    <string name="enter_number">Enter Number</string>
+    <string name="choose_number">Choose a Number</string>
 
     <string name="submit">Submit</string>
 
@@ -22,6 +26,14 @@
         <item>Outgoing</item>
         <item>Missed Call</item>
     </string-array>
+
+    <string-array name="contact_types">
+        <item>Select from Contacts</item>
+        <item>Select from Logs</item>
+        <item>Enter Number</item>
+        <item>Unknown Number</item>
+    </string-array>
+
 
     <!-- Call Log Schedules Fragment -->
     <string name="empty_call_log_schedules_list">There are no call logs scheduled</string>

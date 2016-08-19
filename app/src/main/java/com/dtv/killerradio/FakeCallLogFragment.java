@@ -25,7 +25,10 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -222,9 +225,14 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
             }
         });
 
+        if (AppConstants.CONTACT_SELECTION_USING_DIALOG) {
+            initContactSelectionWidgets(rootView);
+        }
+
         initFieldsToDefaultValues();
         return rootView;
     }
+
 
     private void initDateAndTimeOfCall() {
         updateDateOfCall();
@@ -269,7 +277,8 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
             try {
                 Uri result = data.getData();
                 String id = result.getLastPathSegment();
-                cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{id}, null);
+                cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{id}, null);
                 phoneIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA);
                 if (cursor.moveToFirst()) {
                     while (!cursor.isAfterLast()) {
@@ -287,20 +296,21 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
                 if (cursor != null) {
                     cursor.close();
                 }
-
-                final CharSequence[] items = allNumbers.toArray(new String[allNumbers.size()]);
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Choose a number");
-                builder.setItems(items, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int item) {
-                        String selectedNumber = items[item].toString();
-                        selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-                        callLogEntry.setPhoneNumber(selectedNumber);
-                        mPhoneNumber.setText(callLogEntry.getPhoneNumber());
-                    }
-                });
-                AlertDialog alert = builder.create();
                 if (allNumbers.size() > 1) {
+                    final CharSequence[] items = allNumbers.toArray(new String[allNumbers.size()]);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(getActivity().getString(R.string.choose_number));
+                    builder.setItems(items, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int item) {
+                            String selectedNumber = items[item].toString();
+                            selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
+                            callLogEntry.setPhoneNumber(selectedNumber);
+                            if (null != mPhoneNumber) {
+                                mPhoneNumber.setText(callLogEntry.getPhoneNumber());
+                            }
+                        }
+                    });
+                    AlertDialog alert = builder.create();
                     alert.show();
                 } else {
                     String selectedNumber = phoneNumber;
@@ -309,10 +319,11 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
                     callLogEntry.setPhoneNumber(selectedNumber);
                     Log.d(TAG, "selectedNumber = " + callLogEntry.getPhoneNumber());
                     mPhoneNumber.requestFocus();
-                    mPhoneNumber.setText(callLogEntry.getPhoneNumber());
-                    Log.d(TAG, "gettext = " + mPhoneNumber.getText().toString());
+                    if (null != mPhoneNumber) {
+                        mPhoneNumber.setText(callLogEntry.getPhoneNumber());
+                        Log.d(TAG, "gettext = " + mPhoneNumber.getText().toString());
+                    }
                 }
-
                 if (phoneNumber.length() == 0) {
                     Toast.makeText(getActivity(), "There are no phone number associated with this contact [2]", Toast.LENGTH_SHORT).show();
                 }
@@ -524,5 +535,77 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
             FakeCallLogFragment.updateTimeOfInsertion(newDate, true);
 //            FakeCallLogFragment.callLogEntry.setMonth(4);
         }
+    }
+
+    /**
+     * Refactor the below methods to a new superclass since this will be common for EditLogFragment also
+     */
+
+    private ImageView mContactImage;
+    private TextView mContactName;
+    private TextView mContactNumber;
+    private String[] contactTypeStringArray;
+
+    private void initContactSelectionWidgets(View rootView) {
+        mContactImage = (ImageView) rootView.findViewById(R.id.contact_image);
+        mContactName = (TextView) rootView.findViewById(R.id.contact_name);
+        mContactNumber = (TextView) rootView.findViewById(R.id.contact_number);
+        contactTypeStringArray = getActivity().getResources().getStringArray(R.array.contact_types);
+        LinearLayout mContactSelectionLayout = (LinearLayout) rootView.findViewById(R.id.contact_selection_layout);
+        mContactSelectionLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(getActivity().getString(R.string.choose_contact));
+                builder.setCancelable(true);
+                AlertDialog dialog = builder.create();
+                dialog.getListView();
+                builder.setItems(contactTypeStringArray, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0: // Select from Contacts
+                                selectContact();
+                                break;
+                            case 1: // Select from Logs - TODO
+                                Toast.makeText(getActivity(), "Selection from Logs is not supported currently", Toast.LENGTH_SHORT).show();
+                                break;
+                            case 2: // Enter Number
+                                displayNumericEntryDialog();
+                                break;
+                            case 3: // Unknown Number
+                                break;
+                        }
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
+            }
+        });
+    }
+
+    private void displayNumericEntryDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(getActivity().getResources().getString(R.string.enter_number));
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+
+        // Pass null as the parent view because its going in the dialog layout
+        View rootView = inflater.inflate(R.layout.layout_enter_number, null);
+        final EditText mPhoneNumberInput = (EditText) rootView.findViewById(R.id.phone_number);
+        builder.setView(rootView);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(TAG, "User entered number: " + mPhoneNumberInput.getText().toString());
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 }

@@ -13,5 +13,7 @@ public interface AppConstants {
 
     boolean CALLTYPE_SELECTION_USING_RADIO = true;
 
+    boolean CONTACT_SELECTION_USING_DIALOG = true;
+
     boolean DISPLAY_NAME_AND_PICTURE_IN_EDIT_SCREENS = false;
 }
