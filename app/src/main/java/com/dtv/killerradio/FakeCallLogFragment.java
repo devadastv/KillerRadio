@@ -285,60 +285,67 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
         if (resultCode == Activity.RESULT_OK) {
             Cursor cursor = null;
             String phoneNumber = "";
-            List<String> allNumbers = new ArrayList<String>();
-            int phoneIdx = 0;
+            final String contactName;
+            final String photoUri;
+            List<String> allNumbers = new ArrayList<>();
             try {
                 Uri result = data.getData();
                 String id = result.getLastPathSegment();
-                cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{id}, null);
-                phoneIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA);
+                cursor = ContactsUtil.getContactCursorForID(getActivity(), id);
+                Log.d(TAG, "cursor count = " + cursor.getCount() + " column count = " + cursor.getColumnCount());
                 if (cursor.moveToFirst()) {
+                    contactName = cursor.getString(ContactsUtil.DISPLAY_NAME);
+                    photoUri = cursor.getString(ContactsUtil.PHOTO_THUMBNAIL_DATA);
                     while (!cursor.isAfterLast()) {
-                        phoneNumber = cursor.getString(phoneIdx);
+                        phoneNumber = cursor.getString(ContactsUtil.PHONE_NUMBER_DATA);
+                        Log.d(TAG, "name = " + cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)));
                         allNumbers.add(phoneNumber);
                         cursor.moveToNext();
                     }
+                    if (allNumbers.size() > 1) {
+                        final CharSequence[] items = allNumbers.toArray(new String[allNumbers.size()]);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setTitle(getActivity().getString(R.string.choose_number));
+                        builder.setItems(items, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int item) {
+                                String selectedNumber = items[item].toString();
+                                selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
+                                callLogEntry.setPhoneNumber(selectedNumber);
+                                if (null != mPhoneNumber) {
+                                    mPhoneNumber.setText(callLogEntry.getPhoneNumber());
+                                }
+                                updateContactDetails(contactName, selectedNumber, photoUri);
+                            }
+                        });
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    } else {
+                        String selectedNumber = phoneNumber;
+                        selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
+                        callLogEntry.setPhoneNumber(selectedNumber);
+                        Log.d(TAG, "selectedNumber = " + callLogEntry.getPhoneNumber());
+                        if (null != mPhoneNumber) {
+                            mPhoneNumber.requestFocus();
+                            mPhoneNumber.setText(callLogEntry.getPhoneNumber());
+                            Log.d(TAG, "gettext = " + mPhoneNumber.getText().toString());
+                        }
+                        updateContactDetails(contactName, selectedNumber, photoUri);
+                    }
+                    if (phoneNumber.length() == 0) {
+                        resetContactDetails();
+                        Toast.makeText(getActivity(), "There are no phone number associated with this contact [2]", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
+                    resetContactDetails();
                     Toast.makeText(getActivity(), "There are no phone number associated with this contact [1]", Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
+                resetContactDetails();
                 Toast.makeText(getActivity(), "Some error happened while getting details for this contact.", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             } finally {
                 if (cursor != null) {
                     cursor.close();
-                }
-                if (allNumbers.size() > 1) {
-                    final CharSequence[] items = allNumbers.toArray(new String[allNumbers.size()]);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle(getActivity().getString(R.string.choose_number));
-                    builder.setItems(items, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int item) {
-                            String selectedNumber = items[item].toString();
-                            selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-                            callLogEntry.setPhoneNumber(selectedNumber);
-                            if (null != mPhoneNumber) {
-                                mPhoneNumber.setText(callLogEntry.getPhoneNumber());
-                            }
-                        }
-                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                } else {
-                    String selectedNumber = phoneNumber;
-                    selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-
-                    callLogEntry.setPhoneNumber(selectedNumber);
-                    Log.d(TAG, "selectedNumber = " + callLogEntry.getPhoneNumber());
-                    mPhoneNumber.requestFocus();
-                    if (null != mPhoneNumber) {
-                        mPhoneNumber.setText(callLogEntry.getPhoneNumber());
-                        Log.d(TAG, "gettext = " + mPhoneNumber.getText().toString());
-                    }
-                }
-                if (phoneNumber.length() == 0) {
-                    Toast.makeText(getActivity(), "There are no phone number associated with this contact [2]", Toast.LENGTH_SHORT).show();
                 }
             }
         }

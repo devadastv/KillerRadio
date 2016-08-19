@@ -14,6 +14,7 @@ public class ContactsUtil {
     public final static int ID = 0;
     public final static int DISPLAY_NAME = 1;
     public final static int PHOTO_THUMBNAIL_DATA = 2;
+    public final static int PHONE_NUMBER_DATA = 3;
 
     public static Cursor getContactCursorForNumber(Context context, String contactNumber) {
         Cursor contactLookupCursor = context.getContentResolver().query(
@@ -22,5 +23,15 @@ public class ContactsUtil {
                         Utils.hasHoneycomb() ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME,
                         Utils.hasHoneycomb() ? ContactsContract.Contacts.PHOTO_THUMBNAIL_URI : ContactsContract.Contacts._ID}, null, null, null);
         return contactLookupCursor;
+    }
+
+    public static Cursor getContactCursorForID (Context context, String id) {
+        Cursor cursor = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[]{ContactsContract.PhoneLookup._ID,
+                        Utils.hasHoneycomb() ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME,
+                        Utils.hasHoneycomb() ? ContactsContract.Contacts.PHOTO_THUMBNAIL_URI : ContactsContract.Contacts._ID,
+                        ContactsContract.CommonDataKinds.Phone.DATA},
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{id}, null);
+        return cursor;
     }
 }
