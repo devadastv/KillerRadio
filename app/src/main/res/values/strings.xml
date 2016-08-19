@@ -18,6 +18,7 @@
     <string name="choose_contact">Choose Contact</string>
     <string name="enter_number">Enter Number</string>
     <string name="choose_number">Choose a Number</string>
+    <string name="name_not_available">Name not provided</string>
 
     <string name="submit">Submit</string>
 

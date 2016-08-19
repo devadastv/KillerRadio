@@ -16,4 +16,6 @@ public interface AppConstants {
     boolean CONTACT_SELECTION_USING_DIALOG = true;
 
     boolean DISPLAY_NAME_AND_PICTURE_IN_EDIT_SCREENS = false;
+
+    boolean DEBUG = true;
 }

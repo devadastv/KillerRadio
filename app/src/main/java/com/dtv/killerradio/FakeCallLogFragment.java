@@ -6,7 +6,10 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -14,8 +17,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,7 +40,13 @@ import android.widget.Toast;
 import com.dtv.killerradio.calllog.CallLogEntry;
 import com.dtv.killerradio.calllog.CallLogUtility;
 import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
+import com.dtv.killerradio.util.ContactsUtil;
+import com.dtv.killerradio.util.ImageLoader;
+import com.dtv.killerradio.util.Utils;
 
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,6 +80,7 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
 
     private static CallLogEntry callLogEntry;
     private RadioGroup callTypeRadioGroup;
+    private ImageLoader mImageLoader;
 
     public FakeCallLogFragment() {
     }
@@ -228,6 +240,7 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
         if (AppConstants.CONTACT_SELECTION_USING_DIALOG) {
             initContactSelectionWidgets(rootView);
         }
+        initImageLoader();
 
         initFieldsToDefaultValues();
         return rootView;
@@ -533,7 +546,6 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
             Calendar newDate = Calendar.getInstance();
             newDate.set(callLogInsertionYear, callLogInsertionMonth, callLogInsertionDay, hourOfDay, minute);
             FakeCallLogFragment.updateTimeOfInsertion(newDate, true);
-//            FakeCallLogFragment.callLogEntry.setMonth(4);
         }
     }
 
@@ -545,6 +557,9 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
     private TextView mContactName;
     private TextView mContactNumber;
     private String[] contactTypeStringArray;
+
+    // Handles loading the contact image in a background thread
+    private ImageLoader mContactImageLoader;
 
     private void initContactSelectionWidgets(View rootView) {
         mContactImage = (ImageView) rootView.findViewById(R.id.contact_image);
@@ -597,7 +612,7 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.d(TAG, "User entered number: " + mPhoneNumberInput.getText().toString());
+                processOnClickOnNumberEntry(mPhoneNumberInput.getText().toString());
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -608,4 +623,137 @@ public class FakeCallLogFragment extends BackKeyHandlingFragment {
         });
         builder.show();
     }
+
+    private void processOnClickOnNumberEntry(String contactNumber) {
+        Log.d(TAG, "User entered number: " + contactNumber);
+        if (TextUtils.isEmpty(contactNumber)) {
+            resetContactDetails();
+        } else {
+            String photoUri = null;
+            String name = null;
+            Cursor contactCursor = ContactsUtil.getContactCursorForNumber(getActivity(), contactNumber);
+            if (contactCursor.getCount() > 0) {
+                contactCursor.moveToFirst();
+                name = contactCursor.getString(ContactsUtil.DISPLAY_NAME);
+                photoUri = contactCursor.getString(ContactsUtil.PHOTO_THUMBNAIL_DATA);
+                if (AppConstants.DEBUG) {
+                    Log.d(TAG, "name: " + name + " photoUri: " + photoUri);
+                }
+                contactCursor.close();
+            }
+            updateContactDetails(name, contactNumber, photoUri);
+        }
+    }
+
+    private void resetContactDetails() {
+        mImageLoader.loadImage(null, mContactImage);
+        mContactName.setText(getActivity().getResources().getString(R.string.choose_contact));
+        mContactNumber.setText(getActivity().getResources().getString(R.string.choose_number));
+    }
+
+    private void updateContactDetails(String name, String number, String photoUri) {
+        mImageLoader.loadImage(photoUri, mContactImage);
+        mContactName.setText(TextUtils.isEmpty(name) ? getActivity().getResources().getString(R.string.name_not_available) : name);
+        mContactNumber.setText(number);
+    }
+
+    private int getContactImageSizeInPixels() {
+        Resources r = getResources();
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, r.getDisplayMetrics()); //TODO: Get dimension from xml (50)
+    }
+
+    private void initImageLoader() {
+        mImageLoader = new ImageLoader(getActivity(), getContactImageSizeInPixels()) {
+            @Override
+            protected Bitmap processBitmap(Object data) {
+                // This gets called in a background thread and passed the data from
+                // ImageLoader.loadImage().
+                return loadContactPhotoThumbnail((String) data, getImageSize());
+            }
+        };
+
+        mImageLoader.setLoadingImage(R.drawable.ic_contact);
+        mImageLoader.addImageCache(getActivity().getSupportFragmentManager(), 0.1f);
+    }
+
+
+    /**
+     * Decodes and scales a contact's image from a file pointed to by a Uri in the contact's data,
+     * and returns the result as a Bitmap. The column that contains the Uri varies according to the
+     * platform version.
+     *
+     * @param photoData For platforms prior to Android 3.0, provide the Contact._ID column value.
+     *                  For Android 3.0 and later, provide the Contact.PHOTO_THUMBNAIL_URI value.
+     * @param imageSize The desired target width and height of the output image in pixels.
+     * @return A Bitmap containing the contact's image, resized to fit the provided image size. If
+     * no thumbnail exists, returns null.
+     */
+    private Bitmap loadContactPhotoThumbnail(String photoData, int imageSize) {
+
+        // Ensures the Fragment is still added to an activity. As this method is called in a
+        // background thread, there's the possibility the Fragment is no longer attached and
+        // added to an activity. If so, no need to spend resources loading the contact photo.
+        if (!isAdded() || getActivity() == null) {
+            return null;
+        }
+
+        // Instantiates an AssetFileDescriptor. Given a content Uri pointing to an image file, the
+        // ContentResolver can return an AssetFileDescriptor for the file.
+        AssetFileDescriptor afd = null;
+
+        // This "try" block catches an Exception if the file descriptor returned from the Contacts
+        // Provider doesn't point to an existing file.
+        try {
+            Uri thumbUri;
+            // If Android 3.0 or later, converts the Uri passed as a string to a Uri object.
+            if (Utils.hasHoneycomb()) {
+                thumbUri = Uri.parse(photoData);
+            } else {
+                // For versions prior to Android 3.0, appends the string argument to the content
+                // Uri for the Contacts table.
+                final Uri contactUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, photoData);
+
+                // Appends the content Uri for the Contacts.Photo table to the previously
+                // constructed contact Uri to yield a content URI for the thumbnail image
+                thumbUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+            }
+            // Retrieves a file descriptor from the Contacts Provider. To learn more about this
+            // feature, read the reference documentation for
+            // ContentResolver#openAssetFileDescriptor.
+            afd = getActivity().getContentResolver().openAssetFileDescriptor(thumbUri, "r");
+
+            // Gets a FileDescriptor from the AssetFileDescriptor. A BitmapFactory object can
+            // decode the contents of a file pointed to by a FileDescriptor into a Bitmap.
+            FileDescriptor fileDescriptor = afd.getFileDescriptor();
+
+            if (fileDescriptor != null) {
+                // Decodes a Bitmap from the image pointed to by the FileDescriptor, and scales it
+                // to the specified width and height
+                return ImageLoader.decodeSampledBitmapFromDescriptor(
+                        fileDescriptor, imageSize, imageSize);
+            }
+        } catch (FileNotFoundException e) {
+            // If the file pointed to by the thumbnail URI doesn't exist, or the file can't be
+            // opened in "read" mode, ContentResolver.openAssetFileDescriptor throws a
+            // FileNotFoundException.
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Contact photo thumbnail not found for contact " + photoData
+                        + ": " + e.toString());
+            }
+        } finally {
+            // If an AssetFileDescriptor was returned, try to close it
+            if (afd != null) {
+                try {
+                    afd.close();
+                } catch (IOException e) {
+                    // Closing a file descriptor might cause an IOException if the file is
+                    // already closed. Nothing extra is needed to handle this.
+                }
+            }
+        }
+
+        // If the decoding failed, returns null
+        return null;
+    }
+
 }
