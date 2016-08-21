@@ -53,13 +53,15 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!--[START] NUMBER Selection using EditText-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <android.support.design.widget.TextInputLayout
-                    android:layout_width="fill_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1">
 
@@ -81,6 +83,60 @@
                     android:layout_margin="5dp"
                     android:src="@drawable/ic_contact" />
             </LinearLayout>
+            <!--[END] NUMBER Selection using EditText-->
+
+            <!-- [START] NUMBER Selection using Dialog -->
+            <LinearLayout
+                android:id="@+id/contact_selection_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/contact_image"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:adjustViewBounds="true"
+                        android:src="@drawable/ic_contact" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/contact_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:ellipsize="end"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:singleLine="true"
+                        android:text="@string/select_contact"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="@color/blackText" />
+
+                    <TextView
+                        android:id="@+id/contact_number"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:text="@string/phone_number"
+                        android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                        android:textColor="@color/greyText" />
+                </LinearLayout>
+            </LinearLayout>
+            <!-- [END] NUMBER Selection using Dialog -->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -144,7 +200,7 @@
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1">
 
                 <EditText
@@ -156,7 +212,6 @@
                     android:inputType="textCapWords"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="@string/empty_placeholder_string"
                     android:visibility="gone" />
 
             </android.support.design.widget.TextInputLayout>
@@ -215,10 +270,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:layout_weight="1"
+                    android:background="@color/discardButtonRed"
                     android:text="@string/discard"
-                    android:textStyle="bold"
                     android:textColor="@color/abc_primary_text_material_dark"
-                    android:background="@color/discardButtonRed" />
+                    android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/submit_button"
@@ -229,8 +284,8 @@
                     android:layout_weight="1"
                     android:background="@color/submitButtonGreen"
                     android:text="@string/submit"
-                    android:textStyle="bold"
-                    android:textColor="@color/abc_primary_text_material_dark" />
+                    android:textColor="@color/abc_primary_text_material_dark"
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

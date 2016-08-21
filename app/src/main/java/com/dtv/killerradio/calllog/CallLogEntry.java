@@ -52,7 +52,6 @@ public class CallLogEntry implements Serializable {
     }
 
     private void initCallLogEntryWithDefaultValues() {
-        setPhoneNumber("");
         initTimeOfCallWithCurrentTime();
         setRandomDurationText(context.getString(R.string.random_duration));
         setCallDuration(getRandomDurationText());
@@ -244,6 +243,7 @@ public class CallLogEntry implements Serializable {
 
     public void updateValuesFromCallLogCursor(Cursor cursor) {
         setPhoneNumber(cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER)));
+        Log.d(TAG, "Setting phone number as " + cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER)));
         callDateAndTime.setTimeInMillis(Long.valueOf(cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE))));
         updateTimeAndDateDisplayTexts();
 //        Log.d(TAG, "Cached Name = " + cursor.getString(cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));

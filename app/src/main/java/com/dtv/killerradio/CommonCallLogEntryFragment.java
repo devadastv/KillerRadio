@@ -73,7 +73,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
     private TextView mContactNumber;
     private String[] contactTypeStringArray;
 
-    private CallLogEntry callLogEntry;
+    protected CallLogEntry callLogEntry;
     private ImageLoader mImageLoader;
 
 
@@ -166,16 +166,16 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
                     int callType;
                     switch (id) {
                         case R.id.incoming_type_radiobutton:
-                            callType = 0;
+                            callType = CallLogEntry.INCOMING_TYPE;
                             break;
                         case R.id.outgoing_type_radiobutton:
-                            callType = 1;
+                            callType = CallLogEntry.OUTGOING_TYPE;
                             break;
                         case R.id.missedcall_type_radiobutton:
-                            callType = 2;
+                            callType = CallLogEntry.MISSED_TYPE;
                             break;
                         default:
-                            callType = 0;
+                            callType = CallLogEntry.INCOMING_TYPE;
                     }
                     callLogEntry.setCallType(callType);
                 }
@@ -214,6 +214,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
                 attemptDataSubmit();
             }
         });
+
         initImageLoader();
         initFieldsToDefaultValues();
         return rootView;
@@ -227,20 +228,41 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
 
     protected void initFieldsToDefaultValues() {
         callLogEntry = new CallLogEntry(getActivity());
+        initFieldsToValuesInCallLogEntry();
+    }
+
+    protected void initFieldsToValuesInCallLogEntry() {
         if (AppConstants.CONTACT_SELECTION_USING_DIALOG) {
-            resetContactDetails();
+            fetchAndUpdateContactDetailsForNumber(callLogEntry.getPhoneNumber());
         } else {
             mPhoneNumber.setText(callLogEntry.getPhoneNumber());
         }
         initDateAndTimeOfCall();
         mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay());
         if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
-            callTypeRadioGroup.check(R.id.incoming_type_radiobutton);
+            callTypeRadioGroup.check(getCheckedRadioButtonID());
         } else {
             mCallType.setText(callLogEntry.getCallTypeString());
         }
     }
 
+    private int getCheckedRadioButtonID() {
+        int radioButtonId;
+        switch (callLogEntry.getCallType()) {
+            case CallLogEntry.INCOMING_TYPE:
+                radioButtonId = R.id.incoming_type_radiobutton;
+                break;
+            case CallLogEntry.OUTGOING_TYPE:
+                radioButtonId = R.id.outgoing_type_radiobutton;
+                break;
+            case CallLogEntry.MISSED_TYPE:
+                radioButtonId = R.id.missedcall_type_radiobutton;
+                break;
+            default:
+                radioButtonId = R.id.incoming_type_radiobutton;
+        }
+        return radioButtonId;
+    }
 
     private void selectContact() {
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -399,7 +421,12 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
                 CallLogUtility.getInstance().addCallLog(callLogEntry, getActivity());
             }
             initFieldsToDefaultValues();
+            postProcessSubmission();
         }
+    }
+
+    protected void postProcessSubmission() {
+        // To be extended by implementations to add additional actions after submission
     }
 
     /**
@@ -524,7 +551,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
 
     private void displayNumericEntryDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(getActivity().getResources().getString(R.string.enter_number));
+        builder.setTitle(getString(R.string.enter_number));
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         // Pass null as the parent view because its going in the dialog layout
@@ -552,34 +579,47 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         if (TextUtils.isEmpty(contactNumber)) {
             resetContactDetails();
         } else {
-            String photoUri = null;
-            String name = null;
-            Cursor contactCursor = ContactsUtil.getContactCursorForNumber(getActivity(), contactNumber);
-            if (contactCursor.getCount() > 0) {
-                contactCursor.moveToFirst();
-                name = contactCursor.getString(ContactsUtil.DISPLAY_NAME);
-                photoUri = contactCursor.getString(ContactsUtil.PHOTO_THUMBNAIL_DATA);
-                if (AppConstants.DEBUG) {
-                    Log.d(TAG, "name: " + name + " photoUri: " + photoUri);
+            fetchAndUpdateContactDetailsForNumber(contactNumber);
+        }
+    }
+
+    private void fetchAndUpdateContactDetailsForNumber(String contactNumber) {
+        Log.d(TAG, "Inside fetchAndUpdateContactDetailsForNumber with " + contactNumber);
+        String photoUri = null;
+        String name = null;
+        if (null != contactNumber) {
+            if (contactNumber.trim().length() > 0) { // Exception happens if empty string is passed to below method.
+                Cursor contactCursor = ContactsUtil.getContactCursorForNumber(getActivity(), contactNumber);
+                if (contactCursor.getCount() > 0) {
+                    contactCursor.moveToFirst();
+                    name = contactCursor.getString(ContactsUtil.DISPLAY_NAME);
+                    photoUri = contactCursor.getString(ContactsUtil.PHOTO_THUMBNAIL_DATA);
+                    if (AppConstants.DEBUG) {
+                        Log.d(TAG, "name: " + name + " photoUri: " + photoUri);
+                    }
+                    contactCursor.close();
                 }
-                contactCursor.close();
             }
             updateContactDetails(name, contactNumber, photoUri);
+        } else {
+            // Happens only at FakeCallLog fragment until the user selects any contacts
+            resetContactDetails();
         }
     }
 
     private void resetContactDetails() {
         mImageLoader.loadImage(null, mContactImage);
-        mContactName.setText(getActivity().getResources().getString(R.string.choose_contact));
-        mContactNumber.setText(getActivity().getResources().getString(R.string.choose_number));
+        mContactName.setText(getString(R.string.choose_contact));
+        mContactNumber.setText(getString(R.string.choose_number));
     }
 
     private void updateContactDetails(String name, String selectedNumber, String photoUri) {
+        Log.d(TAG, "Inside updateContactDetails with " + selectedNumber);
         selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", ""); //replace(" ", "");
         callLogEntry.setPhoneNumber(selectedNumber);
         if (AppConstants.CONTACT_SELECTION_USING_DIALOG) {
             mImageLoader.loadImage(photoUri, mContactImage);
-            mContactName.setText(TextUtils.isEmpty(name) ? getActivity().getResources().getString(R.string.name_not_available) : name);
+            mContactName.setText(TextUtils.isEmpty(name) ? getString(R.string.name_not_available) : name);
             mContactNumber.setText(callLogEntry.getPhoneNumber());
         } else {
             mPhoneNumber.setText(callLogEntry.getPhoneNumber());

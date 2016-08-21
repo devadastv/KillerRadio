@@ -60,25 +60,14 @@ import java.util.Random;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EditCallLogFragment extends BackKeyHandlingFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EditCallLogFragment extends CommonCallLogEntryFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = "EditCallLogFragment";
 
     private CursorAdapter mAdapter;
-
     private ProgressBar mProgressBar;
-
-    private static EditText mTimeOfCall;
-    private static EditText mDateOfCall;
-
-    private EditText mPhoneNumber;
-    private EditText mCallDuration;
-    private EditText mCallType;
     private ViewGroup rootView;
-
-    private static CallLogEntry callLogEntry;
     private volatile boolean isEditViewVisible;
-    private RadioGroup callTypeRadioGroup;
 
     public EditCallLogFragment() {
     }
@@ -89,7 +78,7 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateViewExtra(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "Inside FakeCalllogFragment - onCreateView method");
         rootView = (ViewGroup) inflater.inflate(R.layout.fragment_edit_call_log, container, false);
 
@@ -105,15 +94,6 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
     private void initializeLogListComponents(final ViewGroup rootView) {
         ListView mEditCallLogList = (ListView) rootView.findViewById(R.id.calllog_list);
         mEditCallLogList.setEmptyView(rootView.findViewById(android.R.id.empty));
-
-        // For the cursor adapter, specify which columns go into which views
-//        String[] fromColumns = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE};
-//        int[] toViews = {android.R.id.text1, android.R.id.text2};
-        // Create an empty adapter we will use to display the loaded data.
-        // We pass null for the cursor, then update it in onLoadFinished()
-//        mAdapter = new SimpleCursorAdapter(getActivity(),
-//                android.R.layout.simple_list_item_2, null,
-//                fromColumns, toViews, 0);
         mAdapter = new CallLogListCursorAdapter(this.getActivity(), null);
         mEditCallLogList.setAdapter(mAdapter);
         mEditCallLogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -127,115 +107,6 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
     }
 
     private void initializeLogEditComponents(final ViewGroup rootView) {
-        mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
-        mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
-
-        mCallDuration.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callLogEntry.setCallDuration(mCallDuration.getText().toString());
-                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(true));
-            }
-        });
-
-        mCallDuration.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                callLogEntry.setCallDuration(mCallDuration.getText().toString());
-                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(hasFocus));
-                if (hasFocus) {
-                    v.performClick();
-                }
-            }
-        });
-
-        mDateOfCall = (EditText) rootView.findViewById(R.id.date_of_call);
-        mDateOfCall.setInputType(InputType.TYPE_NULL);
-        mDateOfCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment newFragment = new DatePickerFragment();
-                newFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
-            }
-        });
-
-        mTimeOfCall = (EditText) rootView.findViewById(R.id.time_of_call);
-        mTimeOfCall.setInputType(InputType.TYPE_NULL);
-        mTimeOfCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment newFragment = new TimePickerFragment();
-                newFragment.show(getActivity().getSupportFragmentManager(), "timePicker");
-            }
-        });
-
-        ImageButton contactButton = (ImageButton) rootView.findViewById(R.id.contact_icon);
-        contactButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectContact();
-            }
-        });
-
-        if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
-            callTypeRadioGroup = (RadioGroup) rootView.findViewById(R.id.call_type_radiogroup);
-            callTypeRadioGroup.setVisibility(View.VISIBLE);
-            callTypeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(RadioGroup radioGroup, int id) {
-                    Log.d(TAG, "User selected radiobutton = " + id);
-                    int callType;
-                    switch (id) {
-                        case R.id.incoming_type_radiobutton:
-                            callType = 0;
-                            break;
-                        case R.id.outgoing_type_radiobutton:
-                            callType = 1;
-                            break;
-                        case R.id.missedcall_type_radiobutton:
-                            callType = 2;
-                            break;
-                        default:
-                            callType = 0;
-                    }
-                    callLogEntry.setCallType(callType);
-                }
-            });
-        } else {
-            mCallType = (EditText) rootView.findViewById(R.id.call_type);
-            mCallType.setVisibility(View.VISIBLE);
-            mCallType.setInputType(InputType.TYPE_NULL); //TODO: Move to xml?
-            mCallType.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle("Call Type:");
-                    builder.setCancelable(true);
-                    AlertDialog dialog = builder.create();
-                    dialog.getListView();
-                    builder.setSingleChoiceItems(callLogEntry.getCallTypeStringArray(), callLogEntry.getCallType(), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Log.d("SurveyList", "User selected " + which);
-                            callLogEntry.setCallType(which);
-                            mCallType.setText(callLogEntry.getCallTypeString());
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.show();
-                }
-            });
-        }
-
-        Button mSubmitButton = (Button) rootView.findViewById(R.id.submit_button);
-        mSubmitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                attemptDataSubmit();
-                switchToListScreen(rootView);
-            }
-        });
-
         Button mDiscardButton = (Button) rootView.findViewById(R.id.discard_button);
         mDiscardButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -243,6 +114,11 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
                 switchToListScreen(rootView);
             }
         });
+    }
+
+    @Override
+    protected void postProcessSubmission() {
+        switchToListScreen(rootView);
     }
 
     private void switchToEditScreen(View rootView) {
@@ -263,147 +139,25 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         Log.d(TAG, "On switchToListScreen : isEditViewVisible = " + isEditViewVisible);
     }
 
-    private boolean attemptDataSubmit() {
-        boolean cancel = false;
-        View focusView = null;
-
-        // Reset errors.
-        mPhoneNumber.setError(null);
-        mCallDuration.setError(null);
-
-        callLogEntry.setPhoneNumber(mPhoneNumber.getText().toString());
-        if (callLogEntry.isPhoneNumberValid()) {
-            mPhoneNumber.setError("The phone number is empty");
-            focusView = mPhoneNumber;
-            cancel = true;
-        }
-        if (!cancel) {
-            callLogEntry.setCallDuration(mCallDuration.getText().toString());
-            if (!callLogEntry.isDurationValid()) {
-                mCallDuration.setError("The duration should be a number");
-                focusView = mCallDuration;
-                cancel = true;
-            }
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt submit and focus the first
-            // form field with an error.
-            focusView.requestFocus();
-            return false;
-        } else {
-            CallLogUtility.getInstance().deleteCallLogById(callLogEntry, getActivity());
-            CallLogUtility.getInstance().addCallLog(callLogEntry, getActivity());
-            return true;
-        }
+    @Override
+    protected boolean handleSubmit(CallLogEntry callLogEntry) {
+        CallLogUtility.getInstance().deleteCallLogById(callLogEntry, getActivity());
+        CallLogUtility.getInstance().addCallLog(callLogEntry, getActivity());
+        return true;
     }
 
     private void displayLogDetailsInEditScreen(int position) {
-        callLogEntry = new CallLogEntry(getActivity());
         Cursor cursor = mAdapter.getCursor();
         if (cursor != null && cursor.moveToPosition(position)) {
             callLogEntry.updateValuesFromCallLogCursor(cursor);
-            mPhoneNumber.setText(callLogEntry.getPhoneNumber());
-            initDateAndTimeOfCall();
-            mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay());
-            if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
-                int callTypeRadioButtonID;
-                switch (callLogEntry.getCallType()) {
-                    case CallLogEntry.INCOMING_TYPE:
-                        callTypeRadioButtonID = R.id.incoming_type_radiobutton;
-                        break;
-                    case CallLogEntry.OUTGOING_TYPE:
-                        callTypeRadioButtonID = R.id.outgoing_type_radiobutton;
-                        break;
-                    case CallLogEntry.MISSED_TYPE:
-                        callTypeRadioButtonID = R.id.missedcall_type_radiobutton;
-                        break;
-                    default:
-                        callTypeRadioButtonID = R.id.incoming_type_radiobutton;
-                }
-                callTypeRadioGroup.check(callTypeRadioButtonID);
-            } else {
-                mCallType.setText(callLogEntry.getCallTypeString());
-            }
+            initFieldsToValuesInCallLogEntry();
         } else {
             Log.e(TAG, "Display of selected log in editor failed. Either cursor is null or index is out of range. Check: cursor = " + cursor);
             if (null != cursor) {
                 Log.e(TAG, "Cursor count = " + cursor.getCount() + " and requested position = " + position);
             }
-            Toast.makeText(getActivity(), getResources().getString(R.string.error_call_log_edit_message), Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), getString(R.string.error_call_log_edit_message), Toast.LENGTH_LONG).show();
             switchToListScreen(rootView);
-        }
-    }
-
-    private void initDateAndTimeOfCall() {
-        updateDateOfCall();
-        updateTimeOfCall();
-    }
-
-    static final int PICK_CONTACT = 1;
-
-    private void selectContact() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
-        startActivityForResult(intent, PICK_CONTACT);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-//            final EditText phoneInput = mPhoneNumber; // (EditText) findViewById(R.id.phoneNumberInput);
-            Cursor cursor = null;
-            String phoneNumber = "";
-            List<String> allNumbers = new ArrayList<String>();
-            int phoneIdx = 0;
-            try {
-                Uri result = data.getData();
-                String id = result.getLastPathSegment();
-                cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{id}, null);
-                phoneIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA);
-                if (cursor.moveToFirst()) {
-                    while (!cursor.isAfterLast()) {
-                        phoneNumber = cursor.getString(phoneIdx);
-                        allNumbers.add(phoneNumber);
-                        cursor.moveToNext();
-                    }
-                } else {
-                    Toast.makeText(getActivity(), "There are no phone number associated with this contact [1]", Toast.LENGTH_SHORT).show();
-                }
-            } catch (Exception e) {
-                Toast.makeText(getActivity(), "Some error happened while getting details for this contact.", Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-
-                final CharSequence[] items = allNumbers.toArray(new String[allNumbers.size()]);
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Choose a number");
-                builder.setItems(items, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int item) {
-                        String selectedNumber = items[item].toString();
-                        selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-                        callLogEntry.setPhoneNumber(selectedNumber);
-                        mPhoneNumber.setText(callLogEntry.getPhoneNumber());
-                    }
-                });
-                AlertDialog alert = builder.create();
-                if (allNumbers.size() > 1) {
-                    alert.show();
-                } else {
-                    String selectedNumber = phoneNumber.toString();
-                    selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", "").replace(" ", "");
-                    callLogEntry.setPhoneNumber(selectedNumber);
-                    mPhoneNumber.setText(callLogEntry.getPhoneNumber());
-                }
-
-                if (phoneNumber.length() == 0) {
-                    Toast.makeText(getActivity(), "There are no phone number associated with this contact [2]", Toast.LENGTH_SHORT).show();
-                }
-            }
         }
     }
 
@@ -445,14 +199,6 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         }
     }
 
-    private static void updateDateOfCall() {
-        mDateOfCall.setText(callLogEntry.getDateTextForDisplay());
-    }
-
-    private static void updateTimeOfCall() {
-        mTimeOfCall.setText(callLogEntry.getTimeTextForDisplay());
-    }
-
     @Override
     public boolean handleBackKey() {
         Log.d(TAG, "isEditViewVisible " + isEditViewVisible);
@@ -461,69 +207,6 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
             return true;
         } else {
             return false;
-        }
-    }
-
-    public static class DatePickerFragment extends DialogFragment
-            implements DatePickerDialog.OnDateSetListener {
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current date as the default date in the picker if there is no date already set in DatePicker
-            final Calendar c = Calendar.getInstance();
-            CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
-
-//            int year = callLogEntry.getYear();
-//            int month = callLogEntry.getMonth();
-//            int day = callLogEntry.getDay();
-//            if (year > 0 && month > 0 && day > 0) {
-//                c.set(year, month, day);
-//            }
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
-
-            // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(), this, year, month, day);
-        }
-
-        public void onDateSet(DatePicker view, int year, int month, int day) {
-            Calendar newDate = Calendar.getInstance();
-            newDate.set(year, month, day);
-//            EditCallLogFragment.callLogEntry.updateDateOfCall(newDate);
-            EditCallLogFragment.updateDateOfCall();
-        }
-    }
-
-    public static class TimePickerFragment extends DialogFragment
-            implements TimePickerDialog.OnTimeSetListener {
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current time as the default values for the picker
-//            final Calendar c = Calendar.getInstance();
-            CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
-            final Calendar c = callLogEntry.getCallDateAndTime();
-//            int hourOfDay = callLogEntry.getHourOfDay();
-//            int minute = callLogEntry.getMinute();
-//            if (hourOfDay > 0 && minute > 0) {
-//                c.set(callLogEntry.getYear(), callLogEntry.getMonth(), callLogEntry.getDay(), hourOfDay, minute);
-//            }
-            int hourOfDay = c.get(Calendar.HOUR_OF_DAY);
-            int minute = c.get(Calendar.MINUTE);
-
-            // Create a new instance of TimePickerDialog and return it
-            return new TimePickerDialog(getActivity(), this, hourOfDay, minute,
-                    DateFormat.is24HourFormat(getActivity()));
-        }
-
-        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            Calendar newDate = Calendar.getInstance();
-            CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
-//            newDate.set(callLogEntry.getYear(), callLogEntry.getMonth(),
-//                    callLogEntry.getDay(), hourOfDay, minute);
-//            EditCallLogFragment.callLogEntry.updateTimeOfCall(newDate);
-//            EditCallLogFragment.updateTimeOfCall();
         }
     }
 }
