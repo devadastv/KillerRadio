@@ -88,21 +88,25 @@
 
                     <TextView
                         android:id="@+id/contact_name"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:ellipsize="end"
                         android:singleLine="true"
                         android:text="@string/select_contact"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
                         android:textAppearance="?android:attr/textAppearanceMedium"
                         android:textColor="@color/blackText" />
 
                     <TextView
                         android:id="@+id/contact_number"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:text="@string/phone_number"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
                         android:textAppearance="?android:attr/textAppearanceListItemSmall"
                         android:textColor="@color/greyText" />
                 </LinearLayout>
