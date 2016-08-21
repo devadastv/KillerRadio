@@ -74,7 +74,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
     private String[] contactTypeStringArray;
 
     protected CallLogEntry callLogEntry;
-    private ImageLoader mImageLoader;
+    protected ImageLoader mImageLoader;
 
 
     static final int SELECT_CONTACT = 1;

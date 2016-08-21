@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CallLog;
@@ -25,6 +28,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,6 +39,7 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -47,6 +52,8 @@ import android.widget.Toast;
 import com.dtv.killerradio.calllog.CallLogEntry;
 import com.dtv.killerradio.calllog.CallLogUtility;
 import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
+import com.dtv.killerradio.util.ContactsUtil;
+import com.dtv.killerradio.util.ImageLoader;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -207,6 +214,174 @@ public class EditCallLogFragment extends CommonCallLogEntryFragment implements L
             return true;
         } else {
             return false;
+        }
+    }
+
+    private class CallLogListCursorAdapter extends CursorAdapter {
+
+        public static final String TAG = "CallLogCursorAdapter";
+        private LayoutInflater cursorInflater;
+
+        public CallLogListCursorAdapter(Context context, Cursor cursor) {
+            super(context, cursor, 0);
+            cursorInflater = LayoutInflater.from(context);
+        }
+
+        private int getContactImageSizeInPixels() {
+            Resources r = mContext.getResources();
+            return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, r.getDisplayMetrics()); //TODO: Get dimension from xml (50)
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            final View itemLayout = cursorInflater.inflate(R.layout.layout_calllog_item, parent, false);
+
+            // Creates a new ViewHolder in which to store handles to each view resource. This
+            // allows bindView() to retrieve stored references instead of calling findViewById for
+            // each instance of the layout.
+            final ViewHolder holder = new ViewHolder();
+            holder.mContactImage = (ImageView) itemLayout.findViewById(R.id.contact_image);
+            holder.mContactName = (TextView) itemLayout.findViewById(R.id.item_name);
+            holder.mContactNumber = (TextView) itemLayout.findViewById(R.id.item_number);
+            holder.mCallType = (ImageView) itemLayout.findViewById(R.id.item_type);
+            holder.mCallDate = (TextView) itemLayout.findViewById(R.id.item_date);
+            holder.mCallTime = (TextView) itemLayout.findViewById(R.id.item_time);
+
+            // Stores the resourceHolder instance in itemLayout. This makes resourceHolder
+            // available to bindView and other methods that receive a handle to the item view.
+            itemLayout.setTag(holder);
+
+            // Returns the item layout view
+            return itemLayout;
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor logCursor) {
+            if (null != logCursor) {
+                final ViewHolder holder = (ViewHolder) view.getTag();
+                Cursor contactLookupCursor = getContactLookupCursor(logCursor, context);
+                setNameAndNumber(holder, logCursor, contactLookupCursor);
+                setDateAndTime(holder, logCursor);
+                setContactImage(holder, logCursor, contactLookupCursor);
+                setCallTypeIcon(holder, logCursor);
+                if (contactLookupCursor != null && !contactLookupCursor.isClosed()) {
+                    contactLookupCursor.close();
+                }
+            }
+        }
+
+        private void setNameAndNumber(ViewHolder holder, Cursor logCursor, Cursor contactLookupCursor) {
+            String number = logCursor.getString(logCursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER));
+            String name = getContactName(contactLookupCursor); //logCursor.getString(logCursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME));
+            if (TextUtils.isEmpty(name)) {
+                name = number;
+                number = mContext.getString(R.string.unsaved);
+            }
+            holder.mContactName.setText(name);
+            holder.mContactNumber.setText(String.valueOf(number));
+        }
+
+        private void setDateAndTime(ViewHolder holder, Cursor logCursor) {
+            Calendar now = Calendar.getInstance();
+            Calendar callTimeCalendar = Calendar.getInstance();
+            callTimeCalendar.setTimeInMillis(Long.valueOf(logCursor.getString(logCursor.getColumnIndex(CallLog.Calls.DATE))));
+            SimpleDateFormat dateFormatter;
+            if (now.get(Calendar.YEAR) == callTimeCalendar.get(Calendar.YEAR)) {
+                dateFormatter = new SimpleDateFormat("dd-MMM", Locale.US);
+            } else {
+                dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+            }
+            String date = dateFormatter.format(callTimeCalendar.getTime());
+            dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
+            String time = dateFormatter.format(callTimeCalendar.getTime());
+
+            holder.mCallDate.setText(date);
+            holder.mCallTime.setText(time);
+        }
+
+        private void setContactImage(ViewHolder holder, Cursor logCursor, Cursor contactLookupCursor) {
+            ImageView mContactImage = holder.mContactImage;
+            String photoUri = null;
+            if (null != contactLookupCursor && contactLookupCursor.moveToFirst()) {
+                photoUri = contactLookupCursor.getString(ContactsUtil.PHOTO_THUMBNAIL_DATA);
+            }
+            mImageLoader.loadImage(photoUri, mContactImage);
+        }
+
+        private void setCallTypeIcon(ViewHolder holder, Cursor logCursor) {
+            ImageView mCallTypeImage = holder.mCallType;
+            int callType = logCursor.getInt(logCursor.getColumnIndexOrThrow(CallLog.Calls.TYPE));
+            switch (callType) {
+                case CallLog.Calls.INCOMING_TYPE:
+                    mCallTypeImage.setImageResource(R.drawable.incoming);
+                    break;
+                case CallLog.Calls.OUTGOING_TYPE:
+                    mCallTypeImage.setImageResource(R.drawable.outgoing);
+                    break;
+                case CallLog.Calls.MISSED_TYPE:
+                    mCallTypeImage.setImageResource(R.drawable.missed_call);
+                    break;
+                default:
+                    mCallTypeImage.setVisibility(View.GONE);
+            }
+        }
+
+        private Cursor getContactLookupCursor(Cursor logCursor, Context context) {
+            String contactNumber = logCursor.getString(logCursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER));
+            if (contactNumber != null && !contactNumber.trim().isEmpty()) {
+                return ContactsUtil.getContactCursorForNumber(context, contactNumber);
+            }
+            return null;
+        }
+
+        private String getContactName(Cursor contactLookupCursor) {
+            String name = null;
+            if (null != contactLookupCursor && contactLookupCursor.moveToFirst()) {
+                name = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME));
+            }
+            return name;
+        }
+
+        /**
+         * @return the photo URI
+         */
+        public Uri getPhotoUri(int contactID, Context context) {
+            try {
+                Cursor cur = context.getContentResolver().query(
+                        ContactsContract.Data.CONTENT_URI,
+                        null,
+                        ContactsContract.Data.CONTACT_ID + "=" + contactID + " AND "
+                                + ContactsContract.Data.MIMETYPE + "='"
+                                + ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE + "'", null,
+                        null);
+                if (cur != null) {
+                    if (!cur.moveToFirst()) {
+                        cur.close();
+                        return null; // no photo
+                    }
+                } else {
+                    return null; // error in cursor process
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+            Uri person = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactID);
+            return Uri.withAppendedPath(person, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+        }
+
+        /**
+         * A class that defines fields for each resource ID in the list item layout. This allows
+         * ContactsAdapter.newView() to store the IDs once, when it inflates the layout, instead of
+         * calling findViewById in each iteration of bindView.
+         */
+        private class ViewHolder {
+            ImageView mContactImage;
+            TextView mContactName;
+            TextView mContactNumber;
+            ImageView mCallType;
+            TextView mCallDate;
+            TextView mCallTime;
         }
     }
 }
