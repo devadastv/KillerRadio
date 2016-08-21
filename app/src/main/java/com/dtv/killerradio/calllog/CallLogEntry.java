@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.dtv.killerradio.R;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -16,7 +17,7 @@ import java.util.Random;
 /**
  * Created by devadas.vijayan on 7/25/16.
  */
-public class CallLogEntry {
+public class CallLogEntry implements Serializable {
 
     public static final String TAG = "CallLogEntry";
 
@@ -29,18 +30,12 @@ public class CallLogEntry {
 
     private String phoneNumber;
 
-    // Call log entry date and time
-    private int year;
-    private int month;
-    private int day;
-    private int hourOfDay; // Hour of day always - 24 hours
-    private int minute;
+    private Calendar callDateAndTime;
 
     private String dateTextForDisplay;
     private String timeTextForDisplay;
 
     private String callDuration;
-    //    private String callDurationTextForDisplay;
     private String randomDurationText;
 
     private int callType;
@@ -69,65 +64,26 @@ public class CallLogEntry {
         callTypeStringArray = context.getResources().getStringArray(R.array.call_types);
     }
 
+    public void setCallDateAndTime(Calendar updatedCallDateAndTime) {
+        this.callDateAndTime = updatedCallDateAndTime;
+        updateTimeAndDateDisplayTexts();
+    }
+
+    public Calendar getCallDateAndTime() {
+        return callDateAndTime;
+    }
+
     private void initTimeOfCallWithCurrentTime() {
-        Calendar calendar = Calendar.getInstance();
-        updateDateOfCall(calendar);
-        updateTimeOfCall(calendar);
+        callDateAndTime = Calendar.getInstance();
+        updateTimeAndDateDisplayTexts();
     }
 
-    public void updateDateOfCall(Calendar calendar) {
-        setYear(calendar.get(Calendar.YEAR));
-        setMonth(calendar.get(Calendar.MONTH));
-        setDay(calendar.get(Calendar.DAY_OF_MONTH));
-
+    private void updateTimeAndDateDisplayTexts() {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
-        setDateTextForDisplay(dateFormatter.format(calendar.getTime()));
-    }
+        setDateTextForDisplay(dateFormatter.format(callDateAndTime.getTime()));
 
-    public void updateTimeOfCall(Calendar calendar) {
-        setHourOfDay(calendar.get(Calendar.HOUR_OF_DAY));
-        setMinute(calendar.get(Calendar.MINUTE));
-
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
-        setTimeTextForDisplay(dateFormatter.format(calendar.getTime()));
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public void setYear(int year) {
-        this.year = year;
-    }
-
-    public int getDay() {
-        return day;
-    }
-
-    public void setDay(int day) {
-        this.day = day;
-    }
-
-    public int getHourOfDay() {
-        return hourOfDay;
-    }
-
-    public void setHourOfDay(int hourOfDay) {
-        this.hourOfDay = hourOfDay;
-    }
-
-    public int getMinute() {
-        return minute;
-    }
-
-    public void setMinute(int minute) {
-        this.minute = minute;
-    }
-
-    public long getCallLogTimeInMillis() {
-        Calendar calendarForCallLog = Calendar.getInstance();
-        calendarForCallLog.set(getYear(), getMonth(), getDay(), getHourOfDay(), getMinute());
-        return calendarForCallLog.getTimeInMillis();
+        dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
+        setTimeTextForDisplay(dateFormatter.format(callDateAndTime.getTime()));
     }
 
     public String getPhoneNumber() {
@@ -139,15 +95,7 @@ public class CallLogEntry {
     }
 
     public boolean isPhoneNumberValid() {
-        return TextUtils.isEmpty(phoneNumber.trim());
-    }
-
-    public int getMonth() {
-        return month;
-    }
-
-    public void setMonth(int month) {
-        this.month = month;
+        return !TextUtils.isEmpty(phoneNumber.trim());
     }
 
     // Can either be the randomDurationText or empty string or the string representation of an integer duration
@@ -296,11 +244,9 @@ public class CallLogEntry {
 
     public void updateValuesFromCallLogCursor(Cursor cursor) {
         setPhoneNumber(cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER)));
-        Calendar callDayTime = Calendar.getInstance();
-        callDayTime.setTimeInMillis(Long.valueOf(cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE))));
-        Log.d(TAG, "Cached Name = " + cursor.getString(cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));
-        updateDateOfCall(callDayTime);
-        updateTimeOfCall(callDayTime);
+        callDateAndTime.setTimeInMillis(Long.valueOf(cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE))));
+        updateTimeAndDateDisplayTexts();
+//        Log.d(TAG, "Cached Name = " + cursor.getString(cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));
         setCallDuration(Integer.toString(cursor.getInt(cursor.getColumnIndex(CallLog.Calls.DURATION))));
         setSelectedLogId(cursor.getString(cursor.getColumnIndex(CallLog.Calls._ID)));
         Log.d(TAG, "The id of the selected entry = " + getSelectedLogId());

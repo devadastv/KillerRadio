@@ -473,15 +473,15 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
             final Calendar c = Calendar.getInstance();
             CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
 
-            int year = callLogEntry.getYear();
-            int month = callLogEntry.getMonth();
-            int day = callLogEntry.getDay();
-            if (year > 0 && month > 0 && day > 0) {
-                c.set(year, month, day);
-            }
-            year = c.get(Calendar.YEAR);
-            month = c.get(Calendar.MONTH);
-            day = c.get(Calendar.DAY_OF_MONTH);
+//            int year = callLogEntry.getYear();
+//            int month = callLogEntry.getMonth();
+//            int day = callLogEntry.getDay();
+//            if (year > 0 && month > 0 && day > 0) {
+//                c.set(year, month, day);
+//            }
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH);
+            int day = c.get(Calendar.DAY_OF_MONTH);
 
             // Create a new instance of DatePickerDialog and return it
             return new DatePickerDialog(getActivity(), this, year, month, day);
@@ -490,7 +490,7 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         public void onDateSet(DatePicker view, int year, int month, int day) {
             Calendar newDate = Calendar.getInstance();
             newDate.set(year, month, day);
-            EditCallLogFragment.callLogEntry.updateDateOfCall(newDate);
+//            EditCallLogFragment.callLogEntry.updateDateOfCall(newDate);
             EditCallLogFragment.updateDateOfCall();
         }
     }
@@ -501,15 +501,16 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current time as the default values for the picker
-            final Calendar c = Calendar.getInstance();
+//            final Calendar c = Calendar.getInstance();
             CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
-            int hourOfDay = callLogEntry.getHourOfDay();
-            int minute = callLogEntry.getMinute();
-            if (hourOfDay > 0 && minute > 0) {
-                c.set(callLogEntry.getYear(), callLogEntry.getMonth(), callLogEntry.getDay(), hourOfDay, minute);
-            }
-            hourOfDay = c.get(Calendar.HOUR_OF_DAY);
-            minute = c.get(Calendar.MINUTE);
+            final Calendar c = callLogEntry.getCallDateAndTime();
+//            int hourOfDay = callLogEntry.getHourOfDay();
+//            int minute = callLogEntry.getMinute();
+//            if (hourOfDay > 0 && minute > 0) {
+//                c.set(callLogEntry.getYear(), callLogEntry.getMonth(), callLogEntry.getDay(), hourOfDay, minute);
+//            }
+            int hourOfDay = c.get(Calendar.HOUR_OF_DAY);
+            int minute = c.get(Calendar.MINUTE);
 
             // Create a new instance of TimePickerDialog and return it
             return new TimePickerDialog(getActivity(), this, hourOfDay, minute,
@@ -519,10 +520,10 @@ public class EditCallLogFragment extends BackKeyHandlingFragment implements Load
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             Calendar newDate = Calendar.getInstance();
             CallLogEntry callLogEntry = EditCallLogFragment.callLogEntry;
-            newDate.set(callLogEntry.getYear(), callLogEntry.getMonth(),
-                    callLogEntry.getDay(), hourOfDay, minute);
-            EditCallLogFragment.callLogEntry.updateTimeOfCall(newDate);
-            EditCallLogFragment.updateTimeOfCall();
+//            newDate.set(callLogEntry.getYear(), callLogEntry.getMonth(),
+//                    callLogEntry.getDay(), hourOfDay, minute);
+//            EditCallLogFragment.callLogEntry.updateTimeOfCall(newDate);
+//            EditCallLogFragment.updateTimeOfCall();
         }
     }
 }

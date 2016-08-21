@@ -26,14 +26,14 @@ public class CallLogUtility {
     public void addCallLog(CallLogEntry callLogEntry, Context context) {
         ContentValues values = new ContentValues();
         values.put(CallLog.Calls.NUMBER, callLogEntry.getPhoneNumber());
-        values.put(CallLog.Calls.DATE, callLogEntry.getCallLogTimeInMillis());
+        values.put(CallLog.Calls.DATE, callLogEntry.getCallDateAndTime().getTimeInMillis());
         values.put(CallLog.Calls.DURATION, callLogEntry.getCallDurationToSet());
         values.put(CallLog.Calls.TYPE, callLogEntry.getCallTypeToSet());
         values.put(CallLog.Calls.NEW, 1);
         values.put(CallLog.Calls.CACHED_NAME, "");
         values.put(CallLog.Calls.CACHED_NUMBER_TYPE, 0);
         values.put(CallLog.Calls.CACHED_NUMBER_LABEL, "");
-        Log.d(TAG, "Inserting call log placeholder for " + callLogEntry);
+        Log.d(TAG, "Inserting call log corresponding to " + callLogEntry);
         context.getContentResolver().insert(CallLog.Calls.CONTENT_URI, values);
         Toast.makeText(context, "The fake call log is successfully added!", Toast.LENGTH_SHORT).show();
     }
