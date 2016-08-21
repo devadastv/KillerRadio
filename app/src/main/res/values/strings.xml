@@ -19,6 +19,8 @@
     <string name="enter_number">Enter Number</string>
     <string name="choose_number">Choose a Number</string>
     <string name="name_not_available">Name not provided</string>
+    <string name="error_message_empty_number">Please select a contact or enter number</string>
+    <string name="error_message_invalid_duration">The duration should be a number</string>
 
     <string name="submit">Submit</string>
 

@@ -352,7 +352,6 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
     }
 
     private void attemptDataSubmit() {
-
         boolean cancel = false;
         View focusView = null;
 
@@ -368,14 +367,14 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         if (AppConstants.CONTACT_SELECTION_USING_DIALOG) {
             //TODO: Validate contact details. Show error if required
             if (!callLogEntry.isPhoneNumberValid()) {
-                mContactName.setError("The phone number is empty");
+                mContactName.setError(getString(R.string.error_message_empty_number));
                 focusView = mContactName;
                 cancel = true;
             }
         } else {
             callLogEntry.setPhoneNumber(mPhoneNumber.getText().toString());
             if (!callLogEntry.isPhoneNumberValid()) {
-                mPhoneNumber.setError("The phone number is empty");
+                mPhoneNumber.setError(getString(R.string.error_message_empty_number));
                 focusView = mPhoneNumber;
                 cancel = true;
             }
@@ -384,7 +383,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         if (!cancel) {
             callLogEntry.setCallDuration(mCallDuration.getText().toString());
             if (!callLogEntry.isDurationValid()) {
-                mCallDuration.setError("The duration should be a number");
+                mCallDuration.setError(getString(R.string.error_message_invalid_duration));
                 focusView = mCallDuration;
                 cancel = true;
             }
@@ -493,6 +492,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         mContactSelectionLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mContactName.setError(null);
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle(getActivity().getString(R.string.choose_contact));
                 builder.setCancelable(true);
