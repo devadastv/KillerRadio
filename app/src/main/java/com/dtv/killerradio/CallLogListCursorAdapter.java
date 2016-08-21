@@ -125,15 +125,19 @@ public class CallLogListCursorAdapter extends CursorAdapter {
 
     private Cursor getContactLookupCursor(Cursor logCursor, Context context) {
         String contactNumber = logCursor.getString(logCursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER));
-        Cursor contactLookupCursor = context.getContentResolver().query(
-                Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(contactNumber)),
-                new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup._ID}, null, null, null);
-        return contactLookupCursor;
+        Log.d(TAG, "contactNumber = " + contactNumber + " --- " + contactNumber.length());
+        if (contactNumber != null && !contactNumber.trim().isEmpty()) {
+            Cursor contactLookupCursor = context.getContentResolver().query(
+                    Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(contactNumber)),
+                    new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup._ID}, null, null, null);
+            return contactLookupCursor;
+        }
+        return null;
     }
 
     private int getContactID(Cursor contactLookupCursor) {
         int phoneContactID = -1;
-        if (contactLookupCursor.moveToFirst()) {
+        if (null != contactLookupCursor && contactLookupCursor.moveToFirst()) {
             phoneContactID = contactLookupCursor.getInt(contactLookupCursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID));
         }
         return phoneContactID;
@@ -141,7 +145,7 @@ public class CallLogListCursorAdapter extends CursorAdapter {
 
     private String getContactName(Cursor contactLookupCursor) {
         String name = null;
-        if (contactLookupCursor.moveToFirst()) {
+        if (null != contactLookupCursor && contactLookupCursor.moveToFirst()) {
             name = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME));
         }
 //        Log.d(TAG, "Inside getContactName = " + name);
