@@ -95,7 +95,7 @@ public class CallLogEntry implements Serializable {
     }
 
     public boolean isPhoneNumberValid() {
-        return !TextUtils.isEmpty(phoneNumber.trim());
+        return !TextUtils.isEmpty(phoneNumber); // TODO: Is trim() really required? If so, user will not be able to add an empty number :-)
     }
 
     // Can either be the randomDurationText or empty string or the string representation of an integer duration
