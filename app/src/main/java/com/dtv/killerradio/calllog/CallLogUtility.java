@@ -43,4 +43,10 @@ public class CallLogUtility {
                 new String[]{String.valueOf(callLogEntry.getSelectedLogId())});
         Toast.makeText(context, "Call log at selectedLogId " + callLogEntry.getSelectedLogId() + " is deleted !", Toast.LENGTH_SHORT).show();
     }
+
+    public void updateCallLogByID(CallLogEntry callLogEntry, Context context) {
+        deleteCallLogById(callLogEntry, context);
+        addCallLog(callLogEntry, context);
+        Toast.makeText(context, "The call log is successfully edited!", Toast.LENGTH_SHORT).show();
+    }
 }

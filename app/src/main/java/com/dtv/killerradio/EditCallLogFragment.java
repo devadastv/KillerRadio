@@ -148,8 +148,7 @@ public class EditCallLogFragment extends CommonCallLogEntryFragment implements L
 
     @Override
     protected boolean handleSubmit(CallLogEntry callLogEntry) {
-        CallLogUtility.getInstance().deleteCallLogById(callLogEntry, getActivity());
-        CallLogUtility.getInstance().addCallLog(callLogEntry, getActivity());
+        CallLogUtility.getInstance().updateCallLogByID(callLogEntry, getActivity());
         return true;
     }
 
