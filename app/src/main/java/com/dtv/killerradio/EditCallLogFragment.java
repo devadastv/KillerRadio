@@ -149,6 +149,7 @@ public class EditCallLogFragment extends CommonCallLogEntryFragment implements L
     @Override
     protected boolean handleSubmit(CallLogEntry callLogEntry) {
         CallLogUtility.getInstance().updateCallLogByID(callLogEntry, getActivity());
+        Toast.makeText(getActivity(), getString(R.string.message_successful_edit_submission), Toast.LENGTH_SHORT).show();
         return true;
     }
 

@@ -60,9 +60,9 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
     private static final String TAG = "CommonCallLogEntry";
 
     private EditText mPhoneNumber;
-    protected EditText mTimeOfCall; // Why protected? To give the child classes a reference to an EditText in case they need to use it as a reference for setting height etc for other widgets
-    private EditText mDateOfCall;
-    private EditText mCallDuration;
+    protected TextView mTimeOfCall; // Why protected? To give the child classes a reference to an EditText in case they need to use it as a reference for setting height etc for other widgets
+    private TextView mDateOfCall;
+    private TextView mCallDuration;
     private EditText mCallType;
 
     private RadioGroup callTypeRadioGroup;
@@ -111,8 +111,33 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
             });
         }
 
+        // Call Date
+        mDateOfCall = (TextView) rootView.findViewById(R.id.date_of_call);
+        LinearLayout mDateOfCallLayout = (LinearLayout) rootView.findViewById(R.id.date_of_call_layout);
+        mDateOfCallLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment newFragment = DatePickerFragment.newInstance(callLogEntry.getCallDateAndTime());
+                newFragment.setTargetFragment(CommonCallLogEntryFragment.this, SELECT_DATE);
+                newFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
+            }
+        });
+
+        // Call Time
+        mTimeOfCall = (TextView) rootView.findViewById(R.id.time_of_call);
+        LinearLayout mTimeOfCallLayout = (LinearLayout) rootView.findViewById(R.id.time_of_call_layout);
+        mTimeOfCallLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment newFragment = TimePickerFragment.newInstance(callLogEntry.getCallDateAndTime());
+                newFragment.setTargetFragment(CommonCallLogEntryFragment.this, SELECT_TIME);
+                newFragment.show(getActivity().getSupportFragmentManager(), "timePicker");
+            }
+        });
+
+
         // Call Duration
-        mCallDuration = (EditText) rootView.findViewById(R.id.call_duration);
+        mCallDuration = (TextView) rootView.findViewById(R.id.call_duration);
         mCallDuration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -128,30 +153,6 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
                 if (hasFocus) {
                     v.performClick();
                 }
-            }
-        });
-
-        // Call Date
-        mDateOfCall = (EditText) rootView.findViewById(R.id.date_of_call);
-        mDateOfCall.setInputType(InputType.TYPE_NULL);
-        mDateOfCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment newFragment = DatePickerFragment.newInstance(callLogEntry.getCallDateAndTime());
-                newFragment.setTargetFragment(CommonCallLogEntryFragment.this, SELECT_DATE);
-                newFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
-            }
-        });
-
-        // Call Time
-        mTimeOfCall = (EditText) rootView.findViewById(R.id.time_of_call);
-        mTimeOfCall.setInputType(InputType.TYPE_NULL);
-        mTimeOfCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment newFragment = TimePickerFragment.newInstance(callLogEntry.getCallDateAndTime());
-                newFragment.setTargetFragment(CommonCallLogEntryFragment.this, SELECT_TIME);
-                newFragment.show(getActivity().getSupportFragmentManager(), "timePicker");
             }
         });
 
@@ -419,6 +420,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         } else {
             if (!handleSubmit(callLogEntry)) {
                 CallLogUtility.getInstance().addCallLog(callLogEntry, getActivity());
+                Toast.makeText(getActivity(), getString(R.string.message_successful_calllog_submission), Toast.LENGTH_SHORT).show();
             }
             initFieldsToDefaultValues();
             postProcessSubmission();

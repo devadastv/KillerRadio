@@ -21,6 +21,7 @@
     <string name="name_not_available">Name not provided</string>
     <string name="error_message_empty_number">Please select a contact or enter number</string>
     <string name="error_message_invalid_duration">The duration should be a number</string>
+    <string name="message_successful_calllog_submission">The fake call log is successfully added!</string>
 
     <string name="submit">Submit</string>
 
@@ -46,4 +47,5 @@
     <string name="discard">Discard</string>
     <string name="error_call_log_edit_message">Error in fetching the requested log entry !</string>
     <string name="unsaved">Unsaved</string>
+    <string name="message_successful_edit_submission">The call log is successfully edited!</string>
 </resources>

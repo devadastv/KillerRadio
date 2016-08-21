@@ -92,10 +92,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:ellipsize="end"
-                        android:singleLine="true"
-                        android:text="@string/select_contact"
                         android:focusable="true"
                         android:focusableInTouchMode="true"
+                        android:singleLine="true"
+                        android:text="@string/select_contact"
                         android:textAppearance="?android:attr/textAppearanceMedium"
                         android:textColor="@color/blackText" />
 
@@ -104,75 +104,115 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
-                        android:text="@string/phone_number"
                         android:focusable="true"
                         android:focusableInTouchMode="true"
+                        android:text="@string/phone_number"
                         android:textAppearance="?android:attr/textAppearanceListItemSmall"
                         android:textColor="@color/greyText" />
                 </LinearLayout>
             </LinearLayout>
             <!-- [END] NUMBER Selection using Dialog -->
 
+            <View style="@style/Divider" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
                 android:orientation="horizontal">
 
-                <android.support.design.widget.TextInputLayout
+                <LinearLayout
+                    android:id="@+id/date_of_call_layout"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1">
 
-                    <EditText
+                    <ImageView
+                        android:id="@+id/date_of_call_icon"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:adjustViewBounds="true"
+                        android:src="@drawable/call_date_icon" />
+
+                    <TextView
                         android:id="@+id/date_of_call"
-                        android:layout_width="fill_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:focusableInTouchMode="false"
                         android:hint="@string/date_of_call"
-                        android:inputType="datetime"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="@string/empty_placeholder_string" />
+                        android:text="@string/empty_placeholder_string"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="@color/blackText" />
 
-                </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
 
-                <android.support.design.widget.TextInputLayout
+                <LinearLayout
+                    android:id="@+id/time_of_call_layout"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1">
 
-                    <EditText
+                    <ImageView
+                        android:id="@+id/time_of_call_icon"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:adjustViewBounds="true"
+                        android:src="@drawable/call_time_icon" />
+
+                    <TextView
                         android:id="@+id/time_of_call"
-                        android:layout_width="fill_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:focusableInTouchMode="false"
                         android:hint="@string/time_of_call"
-                        android:inputType="datetime"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="@string/empty_placeholder_string" />
+                        android:text="@string/empty_placeholder_string"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="@color/blackText" />
 
-                </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
 
             </LinearLayout>
 
-            <android.support.design.widget.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            <View style="@style/Divider" />
 
-                <EditText
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp">
+
+                <ImageView
+                    android:id="@+id/call_duration_icon"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/call_duration_icon" />
+
+                <TextView
                     android:id="@+id/call_duration"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:focusableInTouchMode="true"
                     android:hint="@string/call_duration"
-                    android:inputType="number"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="@string/empty_placeholder_string" />
+                    android:text="@string/empty_placeholder_string"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/blackText" />
 
-            </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
 
+            <View style="@style/Divider" />
+
+            <!--[ START ] CALL TYPE SELECTION USING DIALOG-->
             <android.support.design.widget.TextInputLayout
                 android:layout_width="fill_parent"
                 android:layout_height="0dp"
@@ -190,13 +230,15 @@
                     android:visibility="gone" />
 
             </android.support.design.widget.TextInputLayout>
+            <!--[ END ] CALL TYPE SELECTION USING DIALOG-->
 
+            <!-- [START] CALL TYPE SELECTION USING CUSTOM RADIO BUTTONS-->
             <TextView
                 android:id="@+id/call_type_hint"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:layout_marginLeft="4dp"
+                android:layout_marginStart="4dp"
                 android:text="@string/call_type"
                 android:textColorHighlight="@android:color/primary_text_dark" />
 
@@ -232,9 +274,9 @@
                     android:background="@drawable/missedcall_radiobutton_background"
                     android:button="@android:color/transparent" />
             </RadioGroup>
+            <!-- [END] CALL TYPE SELECTION USING CUSTOM RADIO BUTTONS-->
 
-            <!--INSERT TO SCHEDULE - DISABLED NOW-->
-
+            <!--[START] INSERT TO SCHEDULE - DISABLED NOW-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -284,8 +326,8 @@
                         android:text="@string/empty_placeholder_string" />
 
                 </android.support.design.widget.TextInputLayout>
-
             </LinearLayout>
+            <!--[END] INSERT TO SCHEDULE - DISABLED NOW-->
 
             <Button
                 android:id="@+id/submit_button"
