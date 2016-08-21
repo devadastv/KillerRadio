@@ -228,7 +228,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
     protected void initFieldsToDefaultValues() {
         callLogEntry = new CallLogEntry(getActivity());
         if (AppConstants.CONTACT_SELECTION_USING_DIALOG) {
-            //TODO: Default the contact details with value in callLogEntry
+            resetContactDetails();
         } else {
             mPhoneNumber.setText(callLogEntry.getPhoneNumber());
         }
