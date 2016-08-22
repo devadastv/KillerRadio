@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.provider.CallLog;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.dtv.killerradio.R;
 
@@ -36,6 +37,7 @@ public class CallLogEntry implements Serializable {
     private String timeTextForDisplay;
 
     private String callDuration;
+    private String callDurationTextForDisplay;
     private String randomDurationText;
 
     private int callType;
@@ -54,7 +56,7 @@ public class CallLogEntry implements Serializable {
     private void initCallLogEntryWithDefaultValues() {
         initTimeOfCallWithCurrentTime();
         setRandomDurationText(context.getString(R.string.random_duration));
-        setCallDuration(getRandomDurationText());
+        setCallDuration("");
         initCallTypeStringArray();
         setCallType(INCOMING_TYPE);
     }
@@ -98,39 +100,36 @@ public class CallLogEntry implements Serializable {
     }
 
     // Can either be the randomDurationText or empty string or the string representation of an integer duration
-    public void setCallDuration(String callDuration) {
-        this.callDuration = callDuration;
+    public boolean setCallDuration(String callDuration) {
+        if (isDurationValid(callDuration)) {
+            this.callDuration = callDuration;
+            updateCallDurationTextForDisplay();
+            return true;
+        } else {
+            // TODO: Toast
+            return false;
+        }
     }
 
     public String getCallDurationTextForDisplay() {
-        return callDuration;
-    }
-
-    public String getCallDurationTextForDisplay(boolean hasFocus) {
-        String callDurationTextForDisplay = callDuration;
-        if (null != callDuration) {
-            if (hasFocus) {
-                if (callDuration.equals(randomDurationText)) {
-                    callDurationTextForDisplay = "";
-                }
-            } else {
-                if (callDuration.trim().equals("")) {
-                    callDurationTextForDisplay = randomDurationText;
-                }
-            }
-        } else {
-            callDurationTextForDisplay = randomDurationText;
-        }
         return callDurationTextForDisplay;
     }
 
-    public boolean isDurationValid() {
+    public void updateCallDurationTextForDisplay() {
+        if (null == callDuration || callDuration.trim().equals("")) {
+            callDurationTextForDisplay = randomDurationText;
+        } else {
+            callDurationTextForDisplay = callDuration;
+        }
+    }
+
+    private boolean isDurationValid(String durationString) {
         boolean valid;
-        if (callDuration.equals(randomDurationText) || callDuration.equals("")) {
+        if (durationString.equals("")) {
             valid = true;
         } else {
             try {
-                Integer.parseInt(callDuration.trim());
+                Integer.parseInt(durationString.trim());
                 valid = true;
             } catch (NumberFormatException e) {
                 valid = false;
@@ -141,8 +140,8 @@ public class CallLogEntry implements Serializable {
 
     public int getCallDurationToSet() {
         int duration = -1;
-        if (isDurationValid()) {
-            if (callDuration.equals(randomDurationText) || callDuration.equals("")) {
+        if (isDurationValid(callDuration)) {
+            if (callDuration.equals("")) {
                 Random r = new Random();
                 duration = r.nextInt(RANDOM_DURATION_MAX_SECONDS - RANDOM_DURATION_MIN_SECONDS) + RANDOM_DURATION_MIN_SECONDS;
             } else {

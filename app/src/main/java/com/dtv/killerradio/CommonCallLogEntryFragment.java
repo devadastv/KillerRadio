@@ -45,11 +45,9 @@ import com.dtv.killerradio.util.Utils;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 
 /**
@@ -101,7 +99,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         if (AppConstants.CONTACT_SELECTION_USING_DIALOG) {
             initContactSelectionWidgets(rootView);
         } else {
-            mPhoneNumber = (EditText) rootView.findViewById(R.id.phone_number);
+            mPhoneNumber = (EditText) rootView.findViewById(R.id.number);
             ImageButton contactButton = (ImageButton) rootView.findViewById(R.id.contact_icon);
             contactButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -141,20 +139,21 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         mCallDuration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                callLogEntry.setCallDuration(mCallDuration.getText().toString());
-                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(true));
+                displayDurationEntryDialog();
+//                callLogEntry.setCallDuration(mCallDuration.getText().toString());
+//                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(true));
             }
         });
-        mCallDuration.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                callLogEntry.setCallDuration(mCallDuration.getText().toString());
-                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(hasFocus));
-                if (hasFocus) {
-                    v.performClick();
-                }
-            }
-        });
+//        mCallDuration.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View v, boolean hasFocus) {
+//                callLogEntry.setCallDuration(mCallDuration.getText().toString());
+//                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(hasFocus));
+//                if (hasFocus) {
+//                    v.performClick();
+//                }
+//            }
+//        });
 
         // Call Type
         if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
@@ -221,6 +220,38 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         return rootView;
     }
 
+    private void displayDurationEntryDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(getString(R.string.enter_call_duration));
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+
+        // Pass null as the parent view because its going in the dialog layout
+        View rootView = inflater.inflate(R.layout.layout_enter_number, null);
+        final EditText mPhoneNumberInput = (EditText) rootView.findViewById(R.id.number);
+        builder.setView(rootView);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                processCallDurationUpdate(mPhoneNumberInput.getText().toString());
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+    }
+
+    private void processCallDurationUpdate(String updatedDuration) {
+        if(!callLogEntry.setCallDuration(updatedDuration))
+        {
+            Toast.makeText(getActivity(), R.string.message_error_duration, Toast.LENGTH_LONG).show();
+        }
+        mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay());
+    }
 
     private void initDateAndTimeOfCall() {
         updateDateOfCall();
@@ -403,14 +434,14 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
             }
         }
 
-        if (!cancel) {
-            callLogEntry.setCallDuration(mCallDuration.getText().toString());
-            if (!callLogEntry.isDurationValid()) {
-                mCallDuration.setError(getString(R.string.error_message_invalid_duration));
-                focusView = mCallDuration;
-                cancel = true;
-            }
-        }
+//        if (!cancel) {
+//            callLogEntry.setCallDuration(mCallDuration.getText().toString());
+//            if (!callLogEntry.isDurationValid()) {
+//                mCallDuration.setError(getString(R.string.error_message_invalid_duration));
+//                focusView = mCallDuration;
+//                cancel = true;
+//            }
+//        }
 
         if (cancel) {
             // There was an error; don't attempt submit and focus the first
@@ -558,7 +589,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
 
         // Pass null as the parent view because its going in the dialog layout
         View rootView = inflater.inflate(R.layout.layout_enter_number, null);
-        final EditText mPhoneNumberInput = (EditText) rootView.findViewById(R.id.phone_number);
+        final EditText mPhoneNumberInput = (EditText) rootView.findViewById(R.id.number);
         builder.setView(rootView);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {

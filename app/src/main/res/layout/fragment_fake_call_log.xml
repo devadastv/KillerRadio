@@ -41,7 +41,7 @@
                     android:layout_weight="1">
 
                     <EditText
-                        android:id="@+id/phone_number"
+                        android:id="@+id/number"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/phone_number"

@@ -9,6 +9,7 @@
     <string name="date_of_call">Date of Call</string>
     <string name="time_of_call">Time of Call</string>
     <string name="call_duration">Call Duration in Seconds</string>
+    <string name="enter_call_duration">Enter call Duration in Seconds</string>
     <string name="call_type">Call Type</string>
     <string name="random_duration">Random Duration (10 Sec - 5 min)</string>
     <string name="insert_now">Insert Now</string>
@@ -22,6 +23,7 @@
     <string name="error_message_empty_number">Please select a contact or enter number</string>
     <string name="error_message_invalid_duration">The duration should be a number</string>
     <string name="message_successful_calllog_submission">The fake call log is successfully added!</string>
+    <string name="message_error_duration">The duration entered is invalid and hence ignored!</string>
 
     <string name="submit">Submit</string>
 
