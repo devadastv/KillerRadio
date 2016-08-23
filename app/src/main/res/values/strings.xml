@@ -24,7 +24,8 @@
     <string name="error_message_empty_number">Please select a contact or enter number</string>
     <string name="error_message_invalid_duration">The duration should be a number</string>
     <string name="message_successful_calllog_submission">The fake call log is successfully added!</string>
-    <string name="message_error_duration">The duration entered is invalid and hence ignored!</string>
+    <string name="message_error_duration_invalid_value">The duration entered is invalid and hence ignored!</string>
+    <string name="message_error_duration_exceed_range">The duration entered is not in the valid range (0 to 2147483647 Seconds) and hence ignored!</string>
 
     <string name="submit">Submit</string>
 

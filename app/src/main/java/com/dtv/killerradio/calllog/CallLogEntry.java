@@ -31,6 +31,10 @@ public class CallLogEntry implements Serializable {
     private static final int RANDOM_DURATION_MIN_SECONDS = 10;
     private static final int RANDOM_DURATION_MAX_SECONDS = 300;
 
+    public static final int CALL_DURATION_SET_SUCCESS = 1;
+    public static final int CALL_DURATION_SET_FAILURE_MAX_EXCEEDED = 2;
+    public static final int CALL_DURATION_SET_FAILURE_INVALID_VALUE = 3;
+
     private String phoneNumber;
 
     private Calendar callDateAndTime;
@@ -102,14 +106,25 @@ public class CallLogEntry implements Serializable {
     }
 
     // Can either be the randomDurationText or empty string or the string representation of an integer duration
-    public boolean setCallDuration(String callDuration) {
-        if (isDurationValid(callDuration)) {
+    public int setCallDuration(String callDuration) {
+        callDuration = callDuration.trim();
+        int status = CALL_DURATION_SET_SUCCESS;
+        if (!callDuration.isEmpty()) { // This makes an empty string a valid duration and (re)sets duration to random duration
+            try {
+                long value = Long.parseLong(callDuration);
+                Log.d(TAG, "call duration long value is " + value + " for input string of " + callDuration);
+                if (value < 0 || callDuration.length() > 10) {
+                    status = CALL_DURATION_SET_FAILURE_MAX_EXCEEDED;
+                }
+            } catch (NumberFormatException e) {
+                status = CALL_DURATION_SET_FAILURE_INVALID_VALUE;
+            }
+        }
+        if (status == CALL_DURATION_SET_SUCCESS) {
             this.callDuration = callDuration;
             updateCallDurationTextForDisplay();
-            return true;
-        } else {
-            return false;
         }
+        return status;
     }
 
     public String getCallDurationTextForDisplay() {
@@ -128,33 +143,31 @@ public class CallLogEntry implements Serializable {
         }
     }
 
-    private boolean isDurationValid(String durationString) {
-        boolean valid;
-        if (durationString.equals("")) {
-            valid = true;
+//    private int getDurationValidStatus(String durationString) {
+//        int status;
+//        if (durationString.equals("")) {
+//            status = CALL_DURATION_SET_SUCCESS;
+//        } else {
+//            try {
+//                Long.parseLong(durationString.trim());
+//                valid = true;
+//            } catch (NumberFormatException e) {
+//                valid = false;
+//            }
+//        }
+//        return valid;
+//    }
+
+    public long getCallDurationToSet() {
+        long duration = -1;
+        if (callDuration.equals("")) { // callDuration is always assumed to be valid at this point
+            Random r = new Random();
+            duration = r.nextInt(RANDOM_DURATION_MAX_SECONDS - RANDOM_DURATION_MIN_SECONDS) + RANDOM_DURATION_MIN_SECONDS;
         } else {
             try {
-                Integer.parseInt(durationString.trim());
-                valid = true;
+                Log.d(TAG, "callDuration = " + callDuration);
+                duration = Long.parseLong(callDuration.trim());
             } catch (NumberFormatException e) {
-                valid = false;
-            }
-        }
-        return valid;
-    }
-
-    public int getCallDurationToSet() {
-        int duration = -1;
-        if (isDurationValid(callDuration)) {
-            if (callDuration.equals("")) {
-                Random r = new Random();
-                duration = r.nextInt(RANDOM_DURATION_MAX_SECONDS - RANDOM_DURATION_MIN_SECONDS) + RANDOM_DURATION_MIN_SECONDS;
-            } else {
-                try {
-                    Log.d(TAG, "callDuration = " + callDuration);
-                    duration = Integer.parseInt(callDuration.trim());
-                } catch (NumberFormatException e) {
-                }
             }
         }
         return duration;

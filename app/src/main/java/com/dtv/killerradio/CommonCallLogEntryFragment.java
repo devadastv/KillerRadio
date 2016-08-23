@@ -235,9 +235,14 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
     }
 
     private void processCallDurationUpdate(String updatedDuration) {
-        if(!callLogEntry.setCallDuration(updatedDuration))
-        {
-            Toast.makeText(getActivity(), R.string.message_error_duration, Toast.LENGTH_LONG).show();
+        int callDurationSetStatus = callLogEntry.setCallDuration(updatedDuration);
+        switch (callDurationSetStatus) {
+            case CallLogEntry.CALL_DURATION_SET_FAILURE_INVALID_VALUE:
+                Toast.makeText(getActivity(), R.string.message_error_duration_invalid_value, Toast.LENGTH_LONG).show();
+                break;
+            case CallLogEntry.CALL_DURATION_SET_FAILURE_MAX_EXCEEDED:
+                Toast.makeText(getActivity(), R.string.message_error_duration_exceed_range, Toast.LENGTH_LONG).show();
+                break;
         }
         mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay());
     }
