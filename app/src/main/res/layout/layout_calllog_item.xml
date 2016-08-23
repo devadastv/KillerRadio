@@ -22,7 +22,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
@@ -30,29 +30,30 @@
 
             <TextView
                 android:id="@+id/item_name"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
+                android:layout_weight="1"
                 android:ellipsize="end"
+                android:maxLines="1"
                 android:paddingEnd="0dp"
                 android:paddingStart="10dp"
+                android:scrollHorizontally="true"
                 android:singleLine="true"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@color/blackText"/>
+                android:textColor="@color/blackText" />
 
             <TextView
                 android:id="@+id/item_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
                 android:gravity="end"
                 android:paddingEnd="5dp"
                 android:paddingStart="0dp"
-                android:textColor="@color/greyText"
-                android:textAppearance="?android:attr/textAppearanceListItemSmall" />
-        </RelativeLayout>
+                android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                android:textColor="@color/greyText" />
+        </LinearLayout>
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -69,25 +70,27 @@
 
             <TextView
                 android:id="@+id/item_number"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
-                android:layout_toEndOf="@id/item_type"
-                android:textColor="@color/greyText"
-                android:textAppearance="?android:attr/textAppearanceListItemSmall" />
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                android:textColor="@color/greyText" />
 
             <TextView
                 android:id="@+id/item_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
                 android:layout_marginStart="5dp"
                 android:paddingEnd="5dp"
                 android:paddingStart="0dp"
-                android:textColor="@color/greyText"
-                android:textAppearance="?android:attr/textAppearanceListItemSmall" />
+                android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                android:textColor="@color/greyText" />
 
-        </RelativeLayout>
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>
