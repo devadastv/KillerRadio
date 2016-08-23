@@ -108,13 +108,16 @@ public class CallLogEntry implements Serializable {
             updateCallDurationTextForDisplay();
             return true;
         } else {
-            // TODO: Toast
             return false;
         }
     }
 
     public String getCallDurationTextForDisplay() {
         return callDurationTextForDisplay;
+    }
+
+    public String getCallDuration() {
+        return callDuration;
     }
 
     public void updateCallDurationTextForDisplay() {

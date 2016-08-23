@@ -140,20 +140,8 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
             @Override
             public void onClick(View view) {
                 displayDurationEntryDialog();
-//                callLogEntry.setCallDuration(mCallDuration.getText().toString());
-//                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(true));
             }
         });
-//        mCallDuration.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View v, boolean hasFocus) {
-//                callLogEntry.setCallDuration(mCallDuration.getText().toString());
-//                mCallDuration.setText(callLogEntry.getCallDurationTextForDisplay(hasFocus));
-//                if (hasFocus) {
-//                    v.performClick();
-//                }
-//            }
-//        });
 
         // Call Type
         if (AppConstants.CALLTYPE_SELECTION_USING_RADIO) {
@@ -228,6 +216,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         // Pass null as the parent view because its going in the dialog layout
         View rootView = inflater.inflate(R.layout.layout_enter_number, null);
         final EditText mPhoneNumberInput = (EditText) rootView.findViewById(R.id.number);
+        mPhoneNumberInput.setText(callLogEntry.getCallDuration());
         builder.setView(rootView);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
