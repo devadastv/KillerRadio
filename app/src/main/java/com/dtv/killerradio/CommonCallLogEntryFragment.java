@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
@@ -24,6 +25,8 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -217,8 +220,8 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         View rootView = inflater.inflate(R.layout.layout_enter_number, null);
         final EditText mPhoneNumberInput = (EditText) rootView.findViewById(R.id.number);
         mPhoneNumberInput.setText(callLogEntry.getCallDuration());
+        mPhoneNumberInput.setSelectAllOnFocus(true);
         builder.setView(rootView);
-
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -584,6 +587,11 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         // Pass null as the parent view because its going in the dialog layout
         View rootView = inflater.inflate(R.layout.layout_enter_number, null);
         final EditText mPhoneNumberInput = (EditText) rootView.findViewById(R.id.number);
+        if (null != callLogEntry.getPhoneNumber()) {
+            mPhoneNumberInput.setText(callLogEntry.getPhoneNumber());
+        }
+        mPhoneNumberInput.setSelectAllOnFocus(true);
+        mPhoneNumberInput.setInputType(InputType.TYPE_CLASS_PHONE);
         builder.setView(rootView);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
