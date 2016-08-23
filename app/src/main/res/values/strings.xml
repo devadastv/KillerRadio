@@ -9,6 +9,7 @@
     <string name="date_of_call">Date of Call</string>
     <string name="time_of_call">Time of Call</string>
     <string name="call_duration">Call Duration in Seconds</string>
+    <string name="seconds">Seconds</string>
     <string name="enter_call_duration">Enter call Duration in Seconds</string>
     <string name="call_type">Call Type</string>
     <string name="random_duration">Random Duration (10 Sec - 5 min)</string>

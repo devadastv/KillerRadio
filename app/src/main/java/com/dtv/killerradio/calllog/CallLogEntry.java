@@ -22,6 +22,8 @@ public class CallLogEntry implements Serializable {
 
     public static final String TAG = "CallLogEntry";
 
+    public static final String SPACE = " ";
+
     public static final int INCOMING_TYPE = 0;
     public static final int OUTGOING_TYPE = 1;
     public static final int MISSED_TYPE = 2;
@@ -119,7 +121,7 @@ public class CallLogEntry implements Serializable {
         if (null == callDuration || callDuration.trim().equals("")) {
             callDurationTextForDisplay = randomDurationText;
         } else {
-            callDurationTextForDisplay = callDuration;
+            callDurationTextForDisplay = callDuration + SPACE + context.getString(R.string.seconds);
         }
     }
 
@@ -157,10 +159,6 @@ public class CallLogEntry implements Serializable {
 
     private void setRandomDurationText(String randomDurationText) {
         this.randomDurationText = randomDurationText;
-    }
-
-    private String getRandomDurationText() {
-        return this.randomDurationText;
     }
 
     public void setCallType(int callType) {
