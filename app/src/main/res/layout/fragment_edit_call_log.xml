@@ -210,8 +210,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_marginTop="5dp">
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp">
 
                 <ImageView
                     android:id="@+id/call_duration_icon"
@@ -235,7 +235,7 @@
 
             </LinearLayout>
 
-            <View style="@style/Divider" />
+            <!--<View style="@style/Divider" />-->
 
             <!--[ START ] CALL TYPE SELECTION USING DIALOG-->
             <android.support.design.widget.TextInputLayout
@@ -257,21 +257,13 @@
             </android.support.design.widget.TextInputLayout>
             <!--[ END ] CALL TYPE SELECTION USING DIALOG-->
 
-            <!-- [START] CALL TYPE SELECTION USING CUSTOM RADIO BUTTONS-->
-            <TextView
-                android:id="@+id/call_type_hint"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="4dp"
-                android:text="@string/call_type"
-                android:textColorHighlight="@android:color/primary_text_dark" />
-
             <RadioGroup
                 android:id="@+id/call_type_radiogroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
                 android:visibility="gone">
 
                 <RadioButton
