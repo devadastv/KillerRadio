@@ -50,7 +50,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -341,7 +343,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         String phoneNumber = "";
         final String contactName;
         final String photoUri;
-        List<String> allNumbers = new ArrayList<>();
+        Set<String> allNumbers = new LinkedHashSet<>();
         try {
             Uri result = data.getData();
             String id = result.getLastPathSegment();
@@ -380,7 +382,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
         }
     }
 
-    private void displayNumberSelectionDialog(final String contactName, List<String> allNumbers, final String photoUri) {
+    private void displayNumberSelectionDialog(final String contactName, Set<String> allNumbers, final String photoUri) {
         final CharSequence[] items = allNumbers.toArray(new String[allNumbers.size()]);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(getActivity().getString(R.string.choose_number));
