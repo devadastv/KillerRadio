@@ -652,7 +652,7 @@ public abstract class CommonCallLogEntryFragment extends BackKeyHandlingFragment
 
     private void updateContactDetails(String name, String selectedNumber, String photoUri) {
         Log.d(TAG, "Inside updateContactDetails with " + selectedNumber);
-        selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", ""); //replace(" ", "");
+//        selectedNumber = selectedNumber.replace("-", "").replace("(", "").replace(")", ""); //replace(" ", "");
         callLogEntry.setPhoneNumber(selectedNumber);
         if (AppConstants.CONTACT_SELECTION_USING_DIALOG) {
             mImageLoader.loadImage(photoUri, mContactImage);
