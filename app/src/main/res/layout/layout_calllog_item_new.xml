@@ -26,7 +26,8 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="@color/blackText"
         android:layout_toEndOf="@id/contact_image"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@id/item_date" />
 
     <TextView
         android:id="@+id/item_date"
@@ -52,20 +53,21 @@
         android:id="@+id/item_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
+        android:layout_marginStart="10dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:scrollHorizontally="true"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
         android:textColor="@color/greyText"
         android:layout_toEndOf="@id/item_type"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@id/item_time" />
 
     <TextView
         android:id="@+id/item_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="5dp"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
         android:textColor="@color/greyText"
         android:layout_alignParentBottom="true"
