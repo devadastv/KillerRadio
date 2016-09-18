@@ -1,67 +1,42 @@
 package com.dtv.killerradio;
 
-import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.app.TimePickerDialog;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.CursorAdapter;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.app.AlertDialog;
-import android.text.InputType;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.dtv.killerradio.calllog.CallLogEntry;
 import com.dtv.killerradio.calllog.CallLogUtility;
-import com.dtv.killerradio.keyhandling.BackKeyHandlingFragment;
 import com.dtv.killerradio.util.ContactsUtil;
-import com.dtv.killerradio.util.ImageLoader;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 
 /**
@@ -109,6 +84,21 @@ public class EditCallLogFragment extends CommonCallLogEntryFragment implements L
                 Log.d(TAG, "The user clicked on log item: " + position);
                 switchToEditScreen(rootView);
                 displayLogDetailsInEditScreen(position);
+            }
+        });
+        mEditCallLogList.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+                // Pause image loader to ensure smoother scrolling when flinging
+                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING) {
+                    mImageLoader.setPauseWork(true);
+                } else {
+                    mImageLoader.setPauseWork(false);
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
             }
         });
     }
@@ -234,7 +224,7 @@ public class EditCallLogFragment extends CommonCallLogEntryFragment implements L
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            final View itemLayout = cursorInflater.inflate(R.layout.layout_calllog_item, parent, false);
+            final View itemLayout = cursorInflater.inflate(R.layout.layout_calllog_item_new, parent, false);
 
             // Creates a new ViewHolder in which to store handles to each view resource. This
             // allows bindView() to retrieve stored references instead of calling findViewById for
@@ -322,6 +312,7 @@ public class EditCallLogFragment extends CommonCallLogEntryFragment implements L
                     mCallTypeImage.setImageResource(R.drawable.missed_call);
                     break;
                 default:
+                    Log.d(TAG, "Unknown call type: " + callType);
                     mCallTypeImage.setVisibility(View.GONE);
             }
         }
